@@ -21,26 +21,14 @@
         }
     </script>
     <style>
-        /* Custom scrollbar for a cleaner look */
-        ::-webkit-scrollbar {
-            width: 6px;
-            height: 6px;
-        }
-        ::-webkit-scrollbar-track {
-            background: transparent;
-        }
-        ::-webkit-scrollbar-thumb {
-            background: #e4e4e7;
-            border-radius: 10px;
-        }
-        ::-webkit-scrollbar-thumb:hover {
-            background: #d4d4d8;
-        }
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #e4e4e7; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #d4d4d8; }
     </style>
 </head>
 <body class="bg-[#f4f4f5] text-zinc-900 font-sans antialiased min-h-screen flex flex-col selection:bg-zinc-200 selection:text-zinc-900">
 
-    <!-- Écran de connexion -->
     <div id="login-screen" class="fixed inset-0 bg-[#f4f4f5] z-[100] flex flex-col items-center justify-center p-4">
         <div class="bg-white rounded-2xl shadow-xl border border-zinc-200 p-8 w-full max-w-md text-center">
             <div class="w-16 h-16 bg-zinc-900 text-white rounded-2xl flex items-center justify-center shadow-md mx-auto mb-6">
@@ -65,9 +53,7 @@
         </div>
     </div>
 
-    <!-- Contenu de l'application (Masqué par défaut) -->
     <div id="app-content" style="display: none;" class="flex-1 flex flex-col w-full">
-        <!-- Header -->
         <header class="bg-white/80 backdrop-blur-md border-b border-zinc-200/80 sticky top-0 z-40">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
                 <div class="flex items-center gap-3">
@@ -80,6 +66,9 @@
                     </div>
                 </div>
                 <div class="flex items-center gap-3">
+                    <button id="btn-admin-panel" onclick="showAdminPanel()" class="hidden px-4 py-2 bg-zinc-900 border border-zinc-900 text-white text-xs font-semibold rounded-xl hover:bg-zinc-800 transition-all shadow-sm flex items-center gap-2">
+                        <i class="fa-solid fa-shield-halved"></i> Super Admin
+                    </button>
                     <button onclick="showHistory()" class="px-4 py-2 bg-white border border-zinc-200 text-zinc-700 text-xs font-semibold rounded-xl hover:bg-zinc-50 hover:text-zinc-900 transition-all shadow-sm flex items-center gap-2">
                         <i class="fa-solid fa-clock-rotate-left"></i> Historique
                     </button>
@@ -94,13 +83,10 @@
             </div>
         </header>
 
-        <!-- Main Content -->
         <div class="max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-8 flex-1">
             <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
                 
-                <!-- Sidebar (Configuration) -->
                 <aside class="lg:col-span-4 space-y-6">
-                    <!-- Setup Card -->
                     <div id="setup-card" class="bg-white rounded-2xl shadow-sm border border-zinc-200/80 p-6 transition-all duration-300">
                         <div class="flex items-center gap-2 mb-6">
                             <div class="w-8 h-8 rounded-full bg-zinc-100 flex items-center justify-center text-zinc-600">
@@ -110,24 +96,12 @@
                         </div>
                         
                         <div class="space-y-6">
-                            <!-- Agent Select -->
                             <div>
                                 <label class="block text-xs font-semibold text-zinc-500 uppercase tracking-wider mb-2">Nom</label>
                                 <div class="relative">
                                     <select id="agent-select" class="w-full bg-zinc-50 border border-zinc-200 rounded-xl pl-4 pr-10 py-3 text-sm font-medium text-zinc-700 focus:ring-2 focus:ring-zinc-900 focus:border-transparent outline-none transition-all appearance-none cursor-pointer">
                                         <option value="" disabled selected>Sélectionner un nom...</option>
-                                        <option value="ABDELALI MARMOUCH">ABDELALI MARMOUCH</option>
-                                        <option value="AYA LAHRIR">AYA LAHRIR</option>
-                                        <option value="AYMANE EZZAIME">AYMANE EZZAIME</option>
-                                        <option value="AYOUB ZAIKH">AYOUB ZAIKH</option>
-                                        <option value="GHIZLANE EL COUCHA">GHIZLANE EL COUCHA</option>
-                                        <option value="KHAWLA MABROUK">KHAWLA MABROUK</option>
-                                        <option value="MOHAMED EZ-ZAHRY">MOHAMED EZ-ZAHRY</option>
-                                        <option value="NADA EL YAAGOUBI">NADA EL YAAGOUBI</option>
-                                        <option value="OUMAIMA MOUFAKKIR">OUMAIMA MOUFAKKIR</option>
-                                        <option value="SOUFIANE BOUKHAL">SOUFIANE BOUKHAL</option>
-                                        <option value="SOUFIANE EL AMRAOUI">SOUFIANE EL AMRAOUI</option>
-                                    </select>
+                                        </select>
                                     <div class="absolute inset-y-0 right-0 pr-4 flex items-center pointer-events-none">
                                         <i class="fa-solid fa-chevron-down text-zinc-400 text-xs"></i>
                                     </div>
@@ -137,54 +111,15 @@
                             <div class="border-t border-zinc-100 pt-5">
                                 <label class="block text-xs font-semibold text-zinc-500 uppercase tracking-wider mb-3">Catégorie</label>
                                 
-                                <!-- Segmented Control for Categories -->
-                                <div class="flex bg-zinc-100 p-1 rounded-xl mb-5">
-                                    <label class="flex-1 cursor-pointer">
-                                        <input type="radio" name="category" value="Team Reporting" class="peer sr-only" onchange="updateTasksUI()">
-                                        <div class="text-center px-2 py-2 text-xs font-semibold text-zinc-500 peer-checked:bg-white peer-checked:text-zinc-900 peer-checked:shadow-sm rounded-lg transition-all duration-200">Reporting</div>
-                                    </label>
-                                    <label class="flex-1 cursor-pointer">
-                                        <input type="radio" name="category" value="Team Connect" class="peer sr-only" onchange="updateTasksUI()">
-                                        <div class="text-center px-2 py-2 text-xs font-semibold text-zinc-500 peer-checked:bg-white peer-checked:text-zinc-900 peer-checked:shadow-sm rounded-lg transition-all duration-200">Connect</div>
-                                    </label>
-                                    <label class="flex-1 cursor-pointer">
-                                        <input type="radio" name="category" value="Newsletters" class="peer sr-only" onchange="updateTasksUI()">
-                                        <div class="text-center px-2 py-2 text-xs font-semibold text-zinc-500 peer-checked:bg-white peer-checked:text-zinc-900 peer-checked:shadow-sm rounded-lg transition-all duration-200">Newsletters</div>
-                                    </label>
-                                </div>
+                                <div id="categories-container" class="flex flex-wrap bg-zinc-100 p-1 rounded-xl mb-5 gap-1">
+                                    </div>
 
-                                <!-- Entities -->
                                 <div id="entities-container" class="hidden mb-5">
                                     <label class="block text-xs font-semibold text-zinc-500 uppercase tracking-wider mb-2">Entité</label>
-                                    <div class="flex flex-wrap gap-2">
-                                        <label class="cursor-pointer">
-                                            <input type="radio" name="entity" value="EMS1" class="peer sr-only" onchange="updateTasksUI()">
-                                            <div class="px-4 py-2 rounded-xl border border-zinc-200 bg-white text-xs font-semibold text-zinc-600 peer-checked:bg-zinc-900 peer-checked:text-white peer-checked:border-zinc-900 hover:border-zinc-300 transition-all shadow-sm">EMS1</div>
-                                        </label>
-                                        <label class="cursor-pointer">
-                                            <input type="radio" name="entity" value="EMS3" class="peer sr-only" onchange="updateTasksUI()">
-                                            <div class="px-4 py-2 rounded-xl border border-zinc-200 bg-white text-xs font-semibold text-zinc-600 peer-checked:bg-zinc-900 peer-checked:text-white peer-checked:border-zinc-900 hover:border-zinc-300 transition-all shadow-sm">EMS3</div>
-                                        </label>
-                                        <label class="cursor-pointer">
-                                            <input type="radio" name="entity" value="EMS4" class="peer sr-only" onchange="updateTasksUI()">
-                                            <div class="px-4 py-2 rounded-xl border border-zinc-200 bg-white text-xs font-semibold text-zinc-600 peer-checked:bg-zinc-900 peer-checked:text-white peer-checked:border-zinc-900 hover:border-zinc-300 transition-all shadow-sm">EMS4</div>
-                                        </label>
-                                        <label class="cursor-pointer">
-                                            <input type="radio" name="entity" value="EMS6" class="peer sr-only" onchange="updateTasksUI()">
-                                            <div class="px-4 py-2 rounded-xl border border-zinc-200 bg-white text-xs font-semibold text-zinc-600 peer-checked:bg-zinc-900 peer-checked:text-white peer-checked:border-zinc-900 hover:border-zinc-300 transition-all shadow-sm">EMS6</div>
-                                        </label>
-                                        <label class="cursor-pointer">
-                                            <input type="radio" name="entity" value="DMF" class="peer sr-only" onchange="updateTasksUI()">
-                                            <div class="px-4 py-2 rounded-xl border border-zinc-200 bg-white text-xs font-semibold text-zinc-600 peer-checked:bg-zinc-900 peer-checked:text-white peer-checked:border-zinc-900 hover:border-zinc-300 transition-all shadow-sm">DMF</div>
-                                        </label>
-                                        <label class="cursor-pointer">
-                                            <input type="radio" name="entity" value="EMSL" class="peer sr-only" onchange="updateTasksUI()">
-                                            <div class="px-4 py-2 rounded-xl border border-zinc-200 bg-white text-xs font-semibold text-zinc-600 peer-checked:bg-zinc-900 peer-checked:text-white peer-checked:border-zinc-900 hover:border-zinc-300 transition-all shadow-sm">EMSL</div>
-                                        </label>
-                                    </div>
+                                    <div id="entities-list" class="flex flex-wrap gap-2">
+                                        </div>
                                 </div>
 
-                                <!-- Tasks List -->
                                 <div>
                                     <label class="flex justify-between items-center text-xs font-semibold text-zinc-500 uppercase tracking-wider mb-2">
                                         <span>Tâches à effectuer</span>
@@ -200,13 +135,12 @@
                             </div>
 
                             <button onclick="initSession()" class="w-full bg-zinc-900 hover:bg-zinc-800 text-white font-semibold py-3.5 rounded-xl shadow-md shadow-zinc-200 transition-all active:scale-[0.98] flex justify-center items-center gap-2">
-                                <i class="fa-solid fa-power-off text-sm opacity-80"></i>
-                                <span>Démarrer les Taches</span>
+                                <i class="fa-solid fa-plus text-sm opacity-80"></i>
+                                <span id="start-btn-text">Démarrer les Taches</span>
                             </button>
                         </div>
                     </div>
 
-                    <!-- Report Card -->
                     <div id="report-card" class="bg-white rounded-2xl shadow-sm border border-zinc-200/80 p-6 opacity-40 pointer-events-none transition-all duration-300">
                         <div class="flex items-center gap-2 mb-4">
                             <div class="w-8 h-8 rounded-full bg-emerald-50 flex items-center justify-center text-emerald-600">
@@ -222,7 +156,6 @@
                     </div>
                 </aside>
 
-                <!-- Main Area (Tasks Dashboard) -->
                 <main class="lg:col-span-8">
                     <div class="bg-white rounded-2xl shadow-sm border border-zinc-200/80 p-6 md:p-8 min-h-[600px] flex flex-col">
                         <div class="flex items-center justify-between mb-8">
@@ -233,7 +166,6 @@
                         </div>
                         
                         <div id="active-tasks-list" class="space-y-4 flex-1">
-                            <!-- Empty State -->
                             <div class="h-full flex flex-col items-center justify-center py-20 text-zinc-400 bg-zinc-50/50 rounded-2xl border border-dashed border-zinc-200">
                                 <div class="w-16 h-16 bg-white rounded-full flex items-center justify-center shadow-sm border border-zinc-100 mb-4">
                                     <i class="fa-solid fa-inbox text-2xl text-zinc-300"></i>
@@ -246,7 +178,58 @@
             </div>
         </div>
 
-        <!-- History Modal -->
+        <div id="admin-modal" class="fixed inset-0 bg-zinc-900/40 backdrop-blur-sm hidden z-50 flex items-center justify-center p-4 transition-opacity">
+            <div class="bg-white rounded-2xl shadow-2xl w-full max-w-3xl max-h-[90vh] flex flex-col overflow-hidden border border-zinc-100">
+                <div class="p-5 border-b border-zinc-100 flex justify-between items-center bg-zinc-50/50">
+                    <div class="flex items-center gap-3">
+                        <div class="w-8 h-8 rounded-full bg-zinc-900 flex items-center justify-center text-white shadow-sm">
+                            <i class="fa-solid fa-shield-halved text-sm"></i>
+                        </div>
+                        <h2 class="font-bold text-lg tracking-tight text-zinc-900">Panel Super Admin</h2>
+                    </div>
+                    <button onclick="closeAdminPanel()" class="w-8 h-8 flex items-center justify-center rounded-full text-zinc-400 hover:text-zinc-700 hover:bg-zinc-100 transition-colors">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                </div>
+                
+                <div class="p-6 overflow-y-auto flex-1 bg-zinc-50/30 grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="bg-white p-5 rounded-xl border border-zinc-200 shadow-sm">
+                        <h3 class="text-sm font-bold mb-3 flex items-center gap-2"><i class="fa-solid fa-user-plus text-zinc-400"></i> Ajouter un Nom (Agent)</h3>
+                        <input type="text" id="admin-agent-input" placeholder="Ex: NOUVEAU AGENT" class="w-full mb-3 bg-zinc-50 border border-zinc-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-zinc-900 outline-none">
+                        <button onclick="addAgentAdmin()" class="w-full bg-zinc-900 text-white py-2 rounded-lg text-sm font-semibold hover:bg-zinc-800 transition-all">Ajouter Nom</button>
+                    </div>
+
+                    <div class="bg-white p-5 rounded-xl border border-zinc-200 shadow-sm">
+                        <h3 class="text-sm font-bold mb-3 flex items-center gap-2"><i class="fa-solid fa-folder-plus text-zinc-400"></i> Ajouter une Catégorie</h3>
+                        <input type="text" id="admin-cat-input" placeholder="Ex: NOUVELLE CATEGORIE" class="w-full mb-3 bg-zinc-50 border border-zinc-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-zinc-900 outline-none">
+                        <button onclick="addCategoryAdmin()" class="w-full bg-zinc-900 text-white py-2 rounded-lg text-sm font-semibold hover:bg-zinc-800 transition-all">Ajouter Catégorie</button>
+                    </div>
+
+                    <div class="bg-white p-5 rounded-xl border border-zinc-200 shadow-sm">
+                        <h3 class="text-sm font-bold mb-3 flex items-center gap-2"><i class="fa-solid fa-sitemap text-zinc-400"></i> Ajouter une Entité</h3>
+                        <select id="admin-sel-cat-ent" class="w-full mb-3 bg-zinc-50 border border-zinc-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-zinc-900 outline-none"></select>
+                        <input type="text" id="admin-ent-input" placeholder="Ex: EMS5, ALL..." class="w-full mb-3 bg-zinc-50 border border-zinc-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-zinc-900 outline-none">
+                        <button onclick="addEntityAdmin()" class="w-full bg-zinc-900 text-white py-2 rounded-lg text-sm font-semibold hover:bg-zinc-800 transition-all">Ajouter Entité</button>
+                    </div>
+
+                    <div class="bg-white p-5 rounded-xl border border-zinc-200 shadow-sm">
+                        <h3 class="text-sm font-bold mb-3 flex items-center gap-2"><i class="fa-solid fa-list-check text-zinc-400"></i> Ajouter une Tâche</h3>
+                        <select id="admin-sel-cat-task" class="w-full mb-3 bg-zinc-50 border border-zinc-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-zinc-900 outline-none"></select>
+                        <select id="admin-sel-ent-task" class="w-full mb-3 bg-zinc-50 border border-zinc-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-zinc-900 outline-none">
+                            <option value="" disabled selected>Choisir une entité...</option>
+                        </select>
+                        <input type="text" id="admin-task-input" placeholder="Ex: NOUVELLE TACHE" class="w-full mb-3 bg-zinc-50 border border-zinc-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-zinc-900 outline-none">
+                        <button onclick="addTaskAdmin()" class="w-full bg-zinc-900 text-white py-2 rounded-lg text-sm font-semibold hover:bg-zinc-800 transition-all">Ajouter Tâche</button>
+                    </div>
+                </div>
+                
+                <div class="p-4 border-t border-zinc-100 bg-zinc-50 flex justify-end">
+                    <button onclick="resetToDefaults()" class="px-4 py-2 bg-rose-50 text-rose-600 border border-rose-200 rounded-lg text-xs font-semibold hover:bg-rose-100 transition-all mr-auto">Réinitialiser par défaut</button>
+                    <button onclick="closeAdminPanel()" class="px-4 py-2 bg-zinc-200 text-zinc-800 rounded-lg text-sm font-semibold hover:bg-zinc-300 transition-all">Fermer</button>
+                </div>
+            </div>
+        </div>
+
         <div id="history-modal" class="fixed inset-0 bg-zinc-900/40 backdrop-blur-sm hidden z-50 flex items-center justify-center p-4 transition-opacity">
             <div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[85vh] flex flex-col overflow-hidden border border-zinc-100">
                 <div class="p-5 border-b border-zinc-100 flex justify-between items-center bg-zinc-50/50">
@@ -261,14 +244,86 @@
                     </button>
                 </div>
                 <div id="history-content" class="p-5 overflow-y-auto flex-1 bg-zinc-50/30">
-                    <!-- content -->
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Script d'authentification -->
     <script>
+        // CONFIGURATION GLOBALE DYNAMIQUE
+        window.defaultAgents = [
+            "ABDELALI MARMOUCH", "AYA LAHRIR", "AYMANE EZZAIME", "AYOUB ZAIKH",
+            "GHIZLANE EL COUCHA", "KHAWLA MABROUK", "MOHAMED EZ-ZAHRY",
+            "NADA EL YAAGOUBI", "OUMAIMA MOUFAKKIR", "SOUFIANE BOUKHAL", "SOUFIANE EL AMRAOUI"
+        ];
+        
+        window.defaultConfig = {
+            "Team Reporting": {
+                "EMS1": ["CHECK SELENIUM EMS1", "REPORTING SELENIUM EMS1"],
+                "EMS3": ["CHECK WEB EMS3", "CHECK SELENIUM EMS3", "CHECK AUTOMAT EMS3", "REPORTING WEB EMS3", "REPORTING SELENIUM EMS3", "REPORTING AUTOMAT EMS3"],
+                "EMS4": ["CHECK WEB EMS4", "CHECK SELENIUM EMS4", "CHECK AUTOMAT EMS4", "REPORTING WEB EMS4", "REPORTING SELENIUM EMS4", "REPORTING AUTOMAT EMS4"],
+                "EMS6": ["CHECK WEB EMS6", "CHECK SELENIUM EMS6", "CHECK AUTOMAT EMS6", "REPORTING WEB EMS6", "REPORTING SELENIUM EMS6", "REPORTING AUTOMAT EMS6"],
+                "DMF": ["CHECK SELENIUM DMF", "REPORTING SELENIUM DMF"],
+                "EMSL": ["CHECK SELENIUM EMSL", "REPORTING SELENIUM EMSL"]
+            },
+            "Team Connect": {
+                "EMS1": ["CONNECT SELENIUM EMS1", "VERIFICATION SELENIUM EMS1", "QUALITY SELENIUM EMS1"],
+                "EMS3": ["CONNECT SELENIUM EMS3", "VERIFICATION SELENIUM EMS3", "QUALITY WEB EMS3", "QUALITY SELENIUM EMS3"],
+                "EMS4": ["CONNECT SELENIUM EMS4", "VERIFICATION SELENIUM EMS4", "QUALITY WEB EMS4", "QUALITY SELENIUM EMS4"],
+                "EMS6": ["CONNECT SELENIUM EMS6", "VERIFICATION SELENIUM EMS6", "QUALITY WEB EMS6", "QUALITY SELENIUM EMS6"],
+                "DMF": ["CONNECT SELENIUM DMF", "VERIFICATION SELENIUM DMF", "QUALITY SELENIUM DMF"],
+                "EMSL": ["CONNECT SELENIUM EMSL", "VERIFICATION SELENIUM EMSL", "QUALITY SELENIUM EMSL"],
+                "EMH": ["CONNECT SELENIUM EMH", "VERIFICATION SELENIUM EMH"]
+            },
+            "Newsletters": {
+                "ALL": ["NEWSLETTER EMS1", "NEWSLETTER EMS3", "NEWSLETTER EMS4", "NEWSLETTER EMS6", "NEWSLETTER EMSL", "NEWSLETTER DMF", "COLLECT WEBSITES NEWSLETTER"]
+            }
+        };
+
+        window.allAgents = JSON.parse(localStorage.getItem('admin_agents')) || window.defaultAgents;
+        window.tasksConfig = JSON.parse(localStorage.getItem('admin_config')) || window.defaultConfig;
+        
+        window.checkAdminAccess = function() {
+            const role = sessionStorage.getItem('user_role');
+            if (role === 'SUPER ADMIN' || role === 'SUPER_ADMIN' || role === 'admin') {
+                document.getElementById('btn-admin-panel').classList.remove('hidden');
+            }
+        }
+
+        window.initUI = function() {
+            // Rendu Agents
+            const agentSelect = document.getElementById('agent-select');
+            const currentAgentVal = agentSelect.value;
+            agentSelect.innerHTML = '<option value="" disabled selected>Sélectionner un nom...</option>';
+            window.allAgents.forEach(a => {
+                agentSelect.innerHTML += `<option value="${a}">${a}</option>`;
+            });
+            if(window.allAgents.includes(currentAgentVal)) agentSelect.value = currentAgentVal;
+
+            // Rendu Catégories
+            const catContainer = document.getElementById('categories-container');
+            catContainer.innerHTML = '';
+            Object.keys(window.tasksConfig).forEach(cat => {
+                catContainer.innerHTML += `
+                    <label class="flex-1 cursor-pointer min-w-[100px]">
+                        <input type="radio" name="category" value="${cat}" class="peer sr-only" onchange="updateTasksUI()">
+                        <div class="text-center px-2 py-2 text-xs font-semibold text-zinc-500 peer-checked:bg-white peer-checked:text-zinc-900 peer-checked:shadow-sm rounded-lg transition-all duration-200">${cat}</div>
+                    </label>
+                `;
+            });
+            
+            // Reset state
+            document.getElementById('entities-container').classList.add('hidden');
+            document.getElementById('dynamic-tasks-list').innerHTML = `
+                <div class="flex flex-col items-center justify-center py-8 text-zinc-400 bg-zinc-50 rounded-xl border border-dashed border-zinc-200">
+                    <i class="fa-solid fa-list-check mb-2 text-zinc-300"></i>
+                    <p class="text-xs font-medium">Sélectionnez une catégorie</p>
+                </div>
+            `;
+            
+            updateAdminSelects();
+        }
+
         function checkPassword(e) {
             e.preventDefault();
             const pwd = document.getElementById('password-input').value;
@@ -276,7 +331,6 @@
             const btn = document.querySelector('#login-form button');
             const originalContent = btn.innerHTML;
             
-            // État de chargement
             btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> <span>Vérification...</span>';
             btn.disabled = true;
 
@@ -295,9 +349,13 @@
                 if(d.success) {
                     sessionStorage.setItem('auth_token', 'true');
                     if(d.role) sessionStorage.setItem('user_role', d.role);
+                    
                     document.getElementById('login-screen').style.display = 'none';
                     document.getElementById('app-content').style.display = 'flex';
                     document.getElementById('password-input').value = '';
+                    
+                    checkAdminAccess();
+                    initUI();
                 } else {
                     errorMsg.innerText = 'Accès refusé.';
                     errorMsg.classList.remove('hidden');
@@ -319,18 +377,19 @@
             sessionStorage.removeItem('user_role');
             document.getElementById('app-content').style.display = 'none';
             document.getElementById('login-screen').style.display = 'flex';
+            document.getElementById('btn-admin-panel').classList.add('hidden');
         }
 
-        // Vérification au chargement de la page
         document.addEventListener('DOMContentLoaded', () => {
             if (sessionStorage.getItem('auth_token') === 'true') {
                 document.getElementById('login-screen').style.display = 'none';
                 document.getElementById('app-content').style.display = 'flex';
+                checkAdminAccess();
+                initUI();
             }
         });
     </script>
 
-    <!-- Script principal -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
         import { getFirestore, collection, addDoc, query, where, getDocs, orderBy } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
@@ -348,8 +407,8 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
-        const TELEGRAM_TOKEN = '8430058586:AAH6HaJ1TKF-sO-9uGmRQPp-OatEn069jB0';
-        const TELEGRAM_CHAT_ID = '-5133720332';
+        const TELEGRAM_TOKEN = '8340032430:AAHs6z-XPoA4ADGmpAISTSVxkHwsIo-cg0I';
+        const TELEGRAM_CHAT_ID = '-5224398844';
 
         async function sendTelegramMessage(text) {
             const url = `https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage`;
@@ -371,63 +430,159 @@
         window.tasksData = [];
         window.selectedTasksSet = new Set();
 
-        const tasksConfig = {
-            "Team Reporting": {
-                "EMS1": ["CHECK SELENIUM EMS1", "REPORTING SELENIUM EMS1"],
-                "EMS3": ["CHECK WEB EMS3", "CHECK SELENIUM EMS3", "CHECK AUTOMAT EMS3", "REPORTING WEB EMS3", "REPORTING SELENIUM EMS3", "REPORTING AUTOMAT EMS3"],
-                "EMS4": ["CHECK WEB EMS4", "CHECK SELENIUM EMS4", "CHECK AUTOMAT EMS4", "REPORTING WEB EMS4", "REPORTING SELENIUM EMS4", "REPORTING AUTOMAT EMS4"],
-                "EMS6": ["CHECK WEB EMS6", "CHECK SELENIUM EMS6", "CHECK AUTOMAT EMS6", "REPORTING WEB EMS6", "REPORTING SELENIUM EMS6", "REPORTING AUTOMAT EMS6"],
-                "DMF": ["CHECK SELENIUM DMF", "REPORTING SELENIUM DMF"],
-                "EMSL": ["CHECK SELENIUM EMSL", "REPORTING SELENIUM EMSL"]
-            },
-            "Team Connect": {
-                "EMS1": ["CONNECT SELENIUM EMS1", "VERIFICATION SELENIUM EMS1", "QUALITY SELENIUM EMS1"],
-                "EMS3": ["CONNECT SELENIUM EMS3", "VERIFICATION SELENIUM EMS3", "QUALITY WEB EMS3", "QUALITY SELENIUM EMS3"],
-                "EMS4": ["CONNECT SELENIUM EMS4", "VERIFICATION SELENIUM EMS4", "QUALITY WEB EMS4", "QUALITY SELENIUM EMS4"],
-                "EMS6": ["CONNECT SELENIUM EMS6", "VERIFICATION SELENIUM EMS6", "QUALITY WEB EMS6", "QUALITY SELENIUM EMS6"],
-                "DMF": ["CONNECT SELENIUM DMF", "VERIFICATION SELENIUM DMF", "QUALITY SELENIUM DMF"],
-                "EMSL": ["CONNECT SELENIUM EMSL", "VERIFICATION SELENIUM EMSL", "QUALITY SELENIUM EMSL"],
-                "EMH": ["CONNECT SELENIUM EMH", "VERIFICATION SELENIUM EMH"]
-                
-            },
-            "Newsletters": {
-                "ALL": ["NEWSLETTER EMS1", "NEWSLETTER EMS3", "NEWSLETTER EMS4", "NEWSLETTER EMS6", "NEWSLETTER EMSL", "NEWSLETTER DMF", "COLLECT WEBSITES NEWSLETTER"]
-            }
-        };
-
         window.getTime = function() {
             return new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
         }
 
+        // --- ADMIN FUNCTIONS ---
+        window.showAdminPanel = function() { document.getElementById('admin-modal').classList.remove('hidden'); }
+        window.closeAdminPanel = function() { document.getElementById('admin-modal').classList.add('hidden'); }
+        
+        window.saveConfig = function() {
+            localStorage.setItem('admin_config', JSON.stringify(window.tasksConfig));
+        }
+
+        window.updateAdminSelects = function() {
+            const catEntSelect = document.getElementById('admin-sel-cat-ent');
+            const catTaskSelect = document.getElementById('admin-sel-cat-task');
+            
+            let catOptions = '<option value="" disabled selected>Choisir une catégorie...</option>';
+            Object.keys(window.tasksConfig).forEach(cat => {
+                catOptions += `<option value="${cat}">${cat}</option>`;
+            });
+            
+            if(catEntSelect) catEntSelect.innerHTML = catOptions;
+            if(catTaskSelect) {
+                catTaskSelect.innerHTML = catOptions;
+                catTaskSelect.onchange = function() {
+                    const entTaskSelect = document.getElementById('admin-sel-ent-task');
+                    const cat = this.value;
+                    let entOptions = '<option value="" disabled selected>Choisir une entité...</option>';
+                    if(cat && window.tasksConfig[cat]) {
+                        Object.keys(window.tasksConfig[cat]).forEach(ent => {
+                            entOptions += `<option value="${ent}">${ent}</option>`;
+                        });
+                    }
+                    entTaskSelect.innerHTML = entOptions;
+                };
+            }
+        }
+
+        window.addAgentAdmin = function() {
+            const val = document.getElementById('admin-agent-input').value.trim().toUpperCase();
+            if(!val) return;
+            if(!window.allAgents.includes(val)) {
+                window.allAgents.push(val);
+                localStorage.setItem('admin_agents', JSON.stringify(window.allAgents));
+                window.initUI();
+                alert("Agent ajouté avec succès !");
+                document.getElementById('admin-agent-input').value = '';
+            } else { alert("Cet agent existe déjà."); }
+        }
+
+        window.addCategoryAdmin = function() {
+            const val = document.getElementById('admin-cat-input').value.trim();
+            if(!val) return;
+            if(!window.tasksConfig[val]) {
+                window.tasksConfig[val] = {}; 
+                window.saveConfig();
+                window.initUI();
+                alert("Catégorie ajoutée !");
+                document.getElementById('admin-cat-input').value = '';
+            } else { alert("Cette catégorie existe déjà."); }
+        }
+
+        window.addEntityAdmin = function() {
+            const cat = document.getElementById('admin-sel-cat-ent').value;
+            const val = document.getElementById('admin-ent-input').value.trim().toUpperCase();
+            if(!cat || !val) return alert("Sélectionnez une catégorie et entrez un nom d'entité.");
+            if(!window.tasksConfig[cat][val]) {
+                window.tasksConfig[cat][val] = [];
+                window.saveConfig();
+                window.initUI();
+                alert("Entité ajoutée !");
+                document.getElementById('admin-ent-input').value = '';
+            } else { alert("Cette entité existe déjà."); }
+        }
+
+        window.addTaskAdmin = function() {
+            const cat = document.getElementById('admin-sel-cat-task').value;
+            const ent = document.getElementById('admin-sel-ent-task').value;
+            const val = document.getElementById('admin-task-input').value.trim().toUpperCase();
+            if(!cat || !ent || !val) return alert("Remplissez tous les champs.");
+            if(!window.tasksConfig[cat][ent].includes(val)) {
+                window.tasksConfig[cat][ent].push(val);
+                window.saveConfig();
+                window.initUI();
+                alert("Tâche ajoutée !");
+                document.getElementById('admin-task-input').value = '';
+            } else { alert("Cette tâche existe déjà."); }
+        }
+
+        window.resetToDefaults = function() {
+            if(confirm("Voulez-vous vraiment réinitialiser toutes les configurations aux valeurs par défaut ?")) {
+                localStorage.removeItem('admin_agents');
+                localStorage.removeItem('admin_config');
+                location.reload();
+            }
+        }
+        // --- END ADMIN FUNCTIONS ---
+
         window.updateTasksUI = function() {
             const category = document.querySelector('input[name="category"]:checked')?.value;
             const entitiesContainer = document.getElementById('entities-container');
+            const entitiesList = document.getElementById('entities-list');
             const tasksList = document.getElementById('dynamic-tasks-list');
             
             if (!category) return;
 
-            if (category === "Newsletters") {
+            const catData = window.tasksConfig[category];
+            const entities = Object.keys(catData);
+
+            if (entities.length === 1 && entities[0] === "ALL") {
                 entitiesContainer.classList.add('hidden');
                 document.querySelectorAll('input[name="entity"]').forEach(r => r.checked = false);
-                renderCheckboxes(tasksConfig[category]["ALL"]);
+                renderCheckboxes(catData["ALL"]);
+            } else if (entities.length === 0) {
+                entitiesContainer.classList.add('hidden');
+                tasksList.innerHTML = `
+                    <div class="flex flex-col items-center justify-center py-6 text-zinc-400 bg-zinc-50 rounded-xl border border-dashed border-zinc-200">
+                        <p class="text-xs font-medium">Aucune tâche ou entité configurée.</p>
+                    </div>`;
             } else {
                 entitiesContainer.classList.remove('hidden');
-                const entity = document.querySelector('input[name="entity"]:checked')?.value;
-                if (entity && tasksConfig[category][entity]) {
-                    renderCheckboxes(tasksConfig[category][entity]);
-                } else {
-                    tasksList.innerHTML = `
-                        <div class="flex flex-col items-center justify-center py-6 text-zinc-400 bg-zinc-50 rounded-xl border border-dashed border-zinc-200">
-                            <p class="text-xs font-medium">Sélectionnez une entité</p>
-                        </div>
+                entitiesList.innerHTML = '';
+                entities.forEach(ent => {
+                    entitiesList.innerHTML += `
+                        <label class="cursor-pointer">
+                            <input type="radio" name="entity" value="${ent}" class="peer sr-only" onchange="showTasksForEntity()">
+                            <div class="px-4 py-2 rounded-xl border border-zinc-200 bg-white text-xs font-semibold text-zinc-600 peer-checked:bg-zinc-900 peer-checked:text-white peer-checked:border-zinc-900 hover:border-zinc-300 transition-all shadow-sm">${ent}</div>
+                        </label>
                     `;
-                }
+                });
+                tasksList.innerHTML = `
+                    <div class="flex flex-col items-center justify-center py-6 text-zinc-400 bg-zinc-50 rounded-xl border border-dashed border-zinc-200">
+                        <p class="text-xs font-medium">Sélectionnez une entité</p>
+                    </div>
+                `;
+            }
+        }
+
+        window.showTasksForEntity = function() {
+            const category = document.querySelector('input[name="category"]:checked')?.value;
+            const entity = document.querySelector('input[name="entity"]:checked')?.value;
+            if(category && entity && window.tasksConfig[category][entity]) {
+                renderCheckboxes(window.tasksConfig[category][entity]);
             }
         }
 
         window.renderCheckboxes = function(tasks) {
             const tasksList = document.getElementById('dynamic-tasks-list');
             tasksList.innerHTML = '';
+            if(!tasks || tasks.length === 0) {
+                tasksList.innerHTML = `<p class="text-xs text-center font-medium text-zinc-400 py-4">Aucune tâche disponible.</p>`;
+                return;
+            }
             tasks.forEach(t => {
                 const isChecked = window.selectedTasksSet.has(t) ? 'checked' : '';
                 tasksList.innerHTML += `
@@ -462,30 +617,53 @@
             if (!window.currentAgent) return alert("Veuillez choisir un agent.");
             if (selectedTasks.length === 0) return alert("Veuillez cocher au moins une tâche.");
 
-            window.tasksData = selectedTasks.map(t => ({
-                id: Date.now() + Math.random(),
-                name: t,
-                status: 'pending',
-                start: null,
-                end: null,
-                comment: '',
-                relai: ''
-            }));
+            window.syncDOMToData();
 
-            document.getElementById('setup-card').classList.add('opacity-40', 'pointer-events-none');
+            let addedTasks = [];
+            let isFirstTime = window.tasksData.length === 0;
+
+            selectedTasks.forEach(t => {
+                if (!window.tasksData.find(existing => existing.name === t)) {
+                    window.tasksData.push({
+                        id: Date.now() + Math.random(),
+                        name: t,
+                        status: 'pending',
+                        start: null,
+                        end: null,
+                        comment: '',
+                        relai: ''
+                    });
+                    addedTasks.push(t);
+                }
+            });
+
+            if (addedTasks.length === 0) {
+                alert("Ces tâches ont déjà été ajoutées au tableau de bord.");
+                return;
+            }
+
             document.getElementById('report-card').classList.remove('opacity-40', 'pointer-events-none');
+            
             document.getElementById('session-indicator').innerHTML = `
                 <div class="w-2 h-2 bg-emerald-500 rounded-full animate-pulse shadow-[0_0_8px_rgba(16,185,129,0.6)]"></div>
                 <span class="text-[10px] font-bold uppercase tracking-widest text-emerald-700">En Ligne: ${window.currentAgent}</span>
             `;
 
-
-            let msg = `✅ <strong>${window.currentAgent}</strong> est en ligne.<br>Tâches sélectionnées:<br><br>• ${selectedTasks.join('<br>• ')}`;
+            let msg = isFirstTime 
+                ? `✅ <strong>${window.currentAgent}</strong> est en ligne.<br>Tâches sélectionnées:<br><br>• ${addedTasks.join('<br>• ')}`
+                : `➕ <strong>${window.currentAgent}</strong> a ajouté de nouvelles tâches:<br><br>• ${addedTasks.join('<br>• ')}`;
+            
             sendTelegramMessage(msg);
+
+            window.selectedTasksSet.clear();
+            document.getElementById('selected-count').innerText = "0";
+            document.querySelectorAll('#dynamic-tasks-list input[type="checkbox"]').forEach(cb => cb.checked = false);
+
+            document.getElementById('start-btn-text').innerText = "Ajouter d'autres Tâches";
+
             window.renderTasks();
         }
 
-        // Sauvegarde l'état du DOM dans les données avant de re-rendre ou d'envoyer
         window.syncDOMToData = function() {
             window.tasksData.forEach(t => {
                 if (t.status !== 'finished') {
@@ -505,15 +683,9 @@
             const container = document.getElementById('active-tasks-list');
             container.innerHTML = '';
 
-            const allAgents = [
-                "ABDELALI MARMOUCH", "AYA LAHRIR", "AYMANE EZZAIME", "AYOUB ZAIKH",
-                "GHIZLANE EL COUCHA", "KHAWLA MABROUK", "MOHAMED EZ-ZAHRY",
-                "NADA EL YAAGOUBI", "OUMAIMA MOUFAKKIR", "SOUFIANE BOUKHAL", "SOUFIANE EL AMRAOUI"
-            ];
-
             window.tasksData.forEach(t => {
                 let relaiOptions = '<option value="">Passation à...</option>';
-                allAgents.forEach(agent => {
+                window.allAgents.forEach(agent => {
                     if (agent !== window.currentAgent) {
                         relaiOptions += `<option value="${agent}" ${t.relai === agent ? 'selected' : ''}>${agent}</option>`;
                     }
@@ -526,8 +698,8 @@
                     <div class="flex flex-col md:flex-row justify-between gap-5">
                         <div class="flex-1">
                             <div class="flex items-center gap-3 mb-3">
-                                <div class="w-8 h-8 rounded-full flex items-center justify-center ${t.status === 'finished' ? 'bg-emerald-100 text-emerald-600' : t.status === 'started' ? 'bg-blue-100 text-blue-600' : 'bg-zinc-100 text-zinc-500'}">
-                                    <i class="fa-solid ${t.status === 'finished' ? 'fa-check' : t.status === 'started' ? 'fa-play' : 'fa-pause'} text-xs"></i>
+                                <div class="w-8 h-8 rounded-full flex items-center justify-center ${t.status === 'finished' ? (t.start ? 'bg-emerald-100 text-emerald-600' : 'bg-zinc-100 text-zinc-500') : t.status === 'started' ? 'bg-blue-100 text-blue-600' : 'bg-zinc-100 text-zinc-500'}">
+                                    <i class="fa-solid ${t.status === 'finished' ? (t.start ? 'fa-check' : 'fa-minus') : t.status === 'started' ? 'fa-play' : 'fa-pause'} text-xs"></i>
                                 </div>
                                 <h3 class="font-bold text-zinc-900 text-base">${t.name}</h3>
                             </div>
@@ -543,7 +715,10 @@
                                 <button onclick="actionTask('${t.id}', 'start')" class="${t.status === 'started' ? 'hidden' : ''} px-4 py-2 bg-zinc-900 text-white rounded-xl text-sm font-semibold hover:bg-zinc-800 transition-all shadow-sm">Démarrer</button>
                                 <button onclick="actionTask('${t.id}', 'finish')" class="px-4 py-2 bg-emerald-500 text-white rounded-xl text-sm font-semibold hover:bg-emerald-600 transition-all shadow-sm">Terminer</button>
                             ` : `
-                                <span class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-50 text-emerald-700 font-semibold text-xs rounded-lg border border-emerald-200"><i class="fa-solid fa-check-circle"></i> Complétée</span>
+                                <span class="inline-flex items-center gap-1.5 px-3 py-1.5 ${t.start ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-zinc-50 text-zinc-600 border-zinc-200'} font-semibold text-xs rounded-lg border">
+                                    <i class="fa-solid ${t.start ? 'fa-check-circle' : 'fa-minus-circle'}"></i> 
+                                    ${t.start ? 'Complétée' : 'Non traitée'}
+                                </span>
                             `}
                         </div>
                     </div>
@@ -587,22 +762,24 @@
             if (action === 'start') {
                 task.status = 'started';
                 task.start = window.getTime();
-                msg = `▶️ ${window.currentAgent} a démarré : <br>• ${task.name}`;
+                msg = `▶️ ${window.currentAgent} a démarré: <br>• ${task.name}`;
                 sendTelegramMessage(msg);
             } else {
-                if (task.relai) {
-                    msg = `🛑 ${window.currentAgent} a terminé son tour sur : <br>• ${task.name}\n🔄 Passation à : ${task.relai} (qui va continuer)`;
+                if (!task.start) {
+                    msg = `⏭️ ${window.currentAgent} a marqué comme Non traitée : ${task.name}`;
+                    task.status = 'finished';
+                    task.end = null;
                 } else {
-                    if (!task.start) {
-                        msg = `🛑 ${window.currentAgent} a fini : ${task.name} (Direct Finish)`;
+                    if (task.relai) {
+                        msg = `🛑 ${window.currentAgent} a terminé son tour sur: <br>• ${task.name}\n🔄 Passation à : ${task.relai} (qui va continuer)`;
                     } else {
-                        msg = `🛑 ${window.currentAgent} a fini : ${task.name}`;
+                        msg = `🛑 ${window.currentAgent} a fini : <br>• ${task.name}`;
                     }
+                    task.status = 'finished';
+                    task.end = window.getTime();
                 }
                 
                 sendTelegramMessage(msg);
-                task.status = 'finished';
-                task.end = window.getTime();
             }
             window.renderTasks();
         }
@@ -612,7 +789,7 @@
             const task = window.tasksData.find(x => x.id == id);
             const msgInput = task.comment;
             if (!msgInput) return alert("Entrez un commentaire.");
-            sendTelegramMessage(`⚠️ ALERTE de ${window.currentAgent} sur [${task.name}] : ${msgInput}`);
+            sendTelegramMessage(`⚠️ ALERTE de ${window.currentAgent} sur [${task.name}]: ${msgInput}`);
             task.comment = '';
             window.renderTasks();
         }
@@ -653,12 +830,6 @@
                         reportText += `• État: Terminé (Passation)\n• Durée: ${t.start} ⮕ ${t.end}\n• 🔄 Passation à: ${t.relai}\n`;
                     } else {
                         reportText += `• État: Terminé (Full)\n• Durée: ${t.start} ⮕ ${t.end}\n`;
-                    }
-                } else if (!t.start && t.end) {
-                    if (t.relai) {
-                        reportText += `• État: Terminé par ${window.currentAgent} (Pris en cours)\n• Fin à: ${t.end}\n• 🔄 Passation à: ${t.relai}\n`;
-                    } else {
-                        reportText += `• État: Terminé par ${window.currentAgent} (Pris en cours)\n• Fin à: ${t.end}\n`;
                     }
                 } else if (t.start && !t.end) {
                     reportText += `• État: EN COURS (Non terminé)\n• Début à: ${t.start}\n`;
