@@ -142,17 +142,12 @@
                     </div>
 
                     <div id="report-card" class="bg-white rounded-2xl shadow-sm border border-zinc-200/80 p-6 opacity-40 pointer-events-none transition-all duration-300">
-                        <div class="flex items-center gap-2 mb-4">
-                            <div class="w-8 h-8 rounded-full bg-emerald-50 flex items-center justify-center text-emerald-600">
-                                <i class="fa-solid fa-flag-checkered text-sm"></i>
-                            </div>
-                            <h2 class="text-base font-semibold tracking-tight">Fin de Poste</h2>
+                        <div class="flex flex-col gap-3">
+                            <button onclick="quitSession()" class="w-full bg-rose-50 border border-rose-200 hover:bg-rose-100 text-rose-600 font-semibold py-3.5 rounded-xl transition-all active:scale-[0.98] flex justify-center items-center gap-2">
+                                <i class="fa-solid fa-power-off text-sm"></i>
+                                <span>Quitter</span>
+                            </button>
                         </div>
-                        <p class="text-xs text-zinc-500 mb-5">Vérifiez que toutes vos tâches sont terminées ou passées avant d'envoyer le rapport.</p>
-                        <button onclick="finalizeReport()" class="w-full bg-emerald-500 hover:bg-emerald-600 text-white font-semibold py-3.5 rounded-xl shadow-md shadow-emerald-200 transition-all active:scale-[0.98] flex justify-center items-center gap-2">
-                            <i class="fa-solid fa-paper-plane text-sm opacity-80"></i>
-                            <span>Envoyer Rapport Global</span>
-                        </button>
                     </div>
                 </aside>
 
@@ -429,7 +424,6 @@
                 document.getElementById('app-content').style.display = 'flex';
                 checkAdminAccess();
                 initUI();
-                // Note: restoreCurrentSession is called at the end of the module script below
             }
         });
     </script>
@@ -455,29 +449,102 @@
         const TELEGRAM_TOKEN = '8430058586:AAH6HaJ1TKF-sO-9uGmRQPp-OatEn069jB0';
         const TELEGRAM_CHAT_ID = '-5133720332';
 
-        async function sendTelegramMessage(text) {
+        window.currentAgent = "";
+        window.tasksData = [];
+        window.selectedTasksSet = new Set();
+        window.historyReports = []; 
+        window.currentTelegramMessageId = null; // ID du message en cours
+
+        window.getTime = function() {
+            return new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+        }
+
+        window.escapeHTML = function(str) {
+            if (!str) return "";
+            return str.replace(/&/g, "&amp;")
+                      .replace(/</g, "&lt;")
+                      .replace(/>/g, "&gt;")
+                      .replace(/"/g, "&quot;")
+                      .replace(/'/g, "&#039;");
+        };
+
+        // --- NOUVELLES FONCTIONS TELEGRAM ---
+        async function sendNewTelegramMessage(text) {
             const url = `https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage`;
             try {
-                await fetch(url, {
+                const response = await fetch(url, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         chat_id: TELEGRAM_CHAT_ID,
-                        text: text.replace(/<br>/g, '\n').replace(/<\/?[^>]+(>|$)/g, ""),
+                        text: text,
+                        parse_mode: 'HTML'
                     })
                 });
+                return await response.json();
             } catch (e) {
                 console.error("Telegram error", e);
+                return null;
             }
         }
 
-        window.currentAgent = "";
-        window.tasksData = [];
-        window.selectedTasksSet = new Set();
-        window.historyReports = []; // Tableau global bach nhaz fih l'historique
+        async function editTelegramMessage(messageId, text) {
+            const url = `https://api.telegram.org/bot${TELEGRAM_TOKEN}/editMessageText`;
+            try {
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        chat_id: TELEGRAM_CHAT_ID,
+                        message_id: messageId,
+                        text: text,
+                        parse_mode: 'HTML'
+                    })
+                });
+                return await response.json();
+            } catch (e) {
+                console.error("Telegram error", e);
+                return null;
+            }
+        }
 
-        window.getTime = function() {
-            return new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+        window.updateTelegramStatus = async function() {
+            if (!window.currentAgent || window.tasksData.length === 0) return;
+            
+            let text = `👨‍💻 Agent : <b>${window.currentAgent}</b>\n`;
+            text += `📅 Date : ${new Date().toLocaleDateString('fr-FR')}\n\n`;
+            text += `📋 <b>Les tâches :</b>\n`;
+            
+            window.tasksData.forEach(t => {
+                let status = "⏳ En attente";
+                if (t.status === 'started') status = `▶️ En cours (Début: ${t.start})`;
+                else if (t.status === 'finished') {
+                    if (t.start && t.end) status = `✅ Terminée (Début: ${t.start} | Fin: ${t.end})`;
+                    else if (t.start && !t.end) status = `🛑 Stoppée/Passation (Début: ${t.start})`;
+                    else status = `⏭️ Non traitée`;
+                }
+                
+                text += `\n🔸 <b>${window.escapeHTML(t.name)}</b>\n     └ Statut : ${status}`;
+                if (t.relai) text += `\n     └ 🔄 Passation à : ${window.escapeHTML(t.relai)}`;
+                if (t.comment) text += `\n     └ 💬 Note : ${window.escapeHTML(t.comment)}`;
+            });
+
+            if (window.currentTelegramMessageId) {
+                const res = await editTelegramMessage(window.currentTelegramMessageId, text);
+                if (res && !res.ok) {
+                    const newRes = await sendNewTelegramMessage(text);
+                    if (newRes && newRes.ok) {
+                        window.currentTelegramMessageId = newRes.result.message_id;
+                        window.saveCurrentSession();
+                    }
+                }
+            } else {
+                const res = await sendNewTelegramMessage(text);
+                if (res && res.ok) {
+                    window.currentTelegramMessageId = res.result.message_id;
+                    window.saveCurrentSession();
+                }
+            }
         }
 
         // --- GESTION DE LA PERSISTANCE (SAUVEGARDE DE SESSION PAR PC) ---
@@ -486,13 +553,15 @@
             const sessionData = {
                 agent: window.currentAgent,
                 tasksData: window.tasksData,
-                selectedTasks: Array.from(window.selectedTasksSet)
+                selectedTasks: Array.from(window.selectedTasksSet),
+                telegramMsgId: window.currentTelegramMessageId // Save l'id de message pour l'editer f refresh
             };
             localStorage.setItem('active_session', JSON.stringify(sessionData));
         };
 
         window.clearCurrentSession = function() {
             localStorage.removeItem('active_session');
+            window.currentTelegramMessageId = null;
         };
 
         window.restoreCurrentSession = function() {
@@ -504,6 +573,7 @@
                         window.currentAgent = data.agent;
                         window.tasksData = data.tasksData;
                         window.selectedTasksSet = new Set(data.selectedTasks || []);
+                        window.currentTelegramMessageId = data.telegramMsgId || null;
 
                         // Restaurer l'interface
                         const agentSelect = document.getElementById('agent-select');
@@ -513,6 +583,10 @@
                                 agentSelect.innerHTML += `<option value="${data.agent}">${data.agent}</option>`;
                             }
                             agentSelect.value = data.agent;
+                            
+                            // VERROUILLER LE SELECT AGENT
+                            agentSelect.disabled = true;
+                            agentSelect.classList.add('opacity-60', 'cursor-not-allowed');
                         }
 
                         document.getElementById('report-card').classList.remove('opacity-40', 'pointer-events-none');
@@ -537,10 +611,11 @@
         window.syncAndSave = function() {
             window.syncDOMToData();
             window.saveCurrentSession();
+            window.updateTelegramStatus(); // Mettre à jour en direct le bot mli yzid commentaire wla passation
         };
         // --- FIN DE LA PERSISTANCE ---
 
-        // --- ADMIN FUNCTIONS (Ajout & Suppression) ---
+        // --- ADMIN FUNCTIONS ---
         window.showAdminPanel = function() { document.getElementById('admin-modal').classList.remove('hidden'); }
         window.closeAdminPanel = function() { document.getElementById('admin-modal').classList.add('hidden'); }
         
@@ -548,15 +623,12 @@
             localStorage.setItem('admin_config', JSON.stringify(window.tasksConfig));
         }
 
-        // --- GESTION DES LISTES DÉROULANTES ADMIN ---
         window.updateAdminSelects = function() {
-            // Update Agent Delete Select
             const agentDelSelect = document.getElementById('admin-del-agent');
             if(agentDelSelect) {
                 agentDelSelect.innerHTML = '<option value="" disabled selected>Choisir un agent...</option>' + window.allAgents.map(a => `<option value="${a}">${a}</option>`).join('');
             }
 
-            // Update Categories Selects
             let catOptions = '<option value="" disabled selected>Choisir une catégorie...</option>';
             Object.keys(window.tasksConfig).forEach(cat => { catOptions += `<option value="${cat}">${cat}</option>`; });
             
@@ -566,7 +638,6 @@
             const catDelSelect = document.getElementById('admin-del-cat');
             if(catDelSelect) catDelSelect.innerHTML = catOptions;
 
-            // Reset dependent selects
             document.getElementById('admin-del-ent').innerHTML = '<option value="" disabled selected>Sélectionnez d\'abord la catégorie en haut</option>';
             document.getElementById('admin-sel-ent-task').innerHTML = '<option value="" disabled selected>Choisir une entité...</option>';
             document.getElementById('admin-del-task').innerHTML = '<option value="" disabled selected>Sélectionnez catégorie et entité</option>';
@@ -601,7 +672,6 @@
             document.getElementById('admin-del-task').innerHTML = opts;
         }
 
-        // --- AJOUT ADMIN ---
         window.addAgentAdmin = function() {
             const val = document.getElementById('admin-agent-input').value.trim().toUpperCase();
             if(!val) return;
@@ -653,7 +723,6 @@
             } else { alert("Cette tâche existe déjà."); }
         }
 
-        // --- SUPPRESSION ADMIN ---
         window.deleteAgentAdmin = function() {
             const val = document.getElementById('admin-del-agent').value;
             if(!val) return alert("Sélectionnez un agent à supprimer.");
@@ -708,7 +777,6 @@
                 location.reload();
             }
         }
-        // --- END ADMIN FUNCTIONS ---
 
         window.updateTasksUI = function() {
             const category = document.querySelector('input[name="category"]:checked')?.value;
@@ -825,6 +893,10 @@
                 return;
             }
 
+            // VERROUILLER LE SELECT AGENT
+            agentSelect.disabled = true;
+            agentSelect.classList.add('opacity-60', 'cursor-not-allowed');
+
             document.getElementById('report-card').classList.remove('opacity-40', 'pointer-events-none');
             
             document.getElementById('session-indicator').innerHTML = `
@@ -832,11 +904,7 @@
                 <span class="text-[10px] font-bold uppercase tracking-widest text-emerald-700">En Ligne: ${window.currentAgent}</span>
             `;
 
-            let msg = isFirstTime 
-                ? `✅ <strong>${window.currentAgent}</strong> est en ligne.<br>Tâches sélectionnées:<br><br>• ${addedTasks.join('<br>• ')}`
-                : `➕ <strong>${window.currentAgent}</strong> a ajouté de nouvelles tâches:<br><br>• ${addedTasks.join('<br>• ')}`;
-            
-            sendTelegramMessage(msg);
+            window.updateTelegramStatus(); // Creation ou Mis à jour du Message en Live Telegram
 
             window.selectedTasksSet.clear();
             document.getElementById('selected-count').innerText = "0";
@@ -845,7 +913,52 @@
             document.getElementById('start-btn-text').innerText = "Ajouter d'autres Tâches";
 
             window.renderTasks();
-            window.saveCurrentSession(); // Sauvegarde l'état de la session
+            window.saveCurrentSession(); 
+        }
+
+        // NOUVELLE FONCTION QUITTER LA SESSION
+        window.quitSession = function() {
+            if(confirm("Êtes-vous sûr de vouloir quitter ? Toutes les tâches en cours seront effacées.")) {
+                window.clearCurrentSession();
+                window.tasksData = [];
+                window.selectedTasksSet.clear();
+                window.currentAgent = "";
+                
+                // Réactiver l'input agent
+                const agentSelect = document.getElementById('agent-select');
+                agentSelect.disabled = false;
+                agentSelect.value = "";
+                agentSelect.classList.remove('opacity-60', 'cursor-not-allowed');
+                
+                // Reset UI
+                document.getElementById('report-card').classList.add('opacity-40', 'pointer-events-none');
+                document.getElementById('start-btn-text').innerText = "Démarrer les Taches";
+                document.getElementById('selected-count').innerText = "0";
+                
+                document.getElementById('session-indicator').innerHTML = `
+                    <div class="w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
+                    <span class="text-[10px] font-bold uppercase tracking-widest text-zinc-600">Hors Ligne</span>
+                `;
+                
+                document.querySelectorAll('input[name="category"]').forEach(r => r.checked = false);
+                document.getElementById('entities-container').classList.add('hidden');
+                document.getElementById('dynamic-tasks-list').innerHTML = `
+                    <div class="flex flex-col items-center justify-center py-8 text-zinc-400 bg-zinc-50 rounded-xl border border-dashed border-zinc-200">
+                        <i class="fa-solid fa-list-check mb-2 text-zinc-300"></i>
+                        <p class="text-xs font-medium">Sélectionnez une catégorie</p>
+                    </div>
+                `;
+                
+                const container = document.getElementById('active-tasks-list');
+                container.innerHTML = `
+                    <div class="h-full flex flex-col items-center justify-center py-20 text-zinc-400 bg-zinc-50/50 rounded-2xl border border-dashed border-zinc-200">
+                        <div class="w-16 h-16 bg-white rounded-full flex items-center justify-center shadow-sm border border-zinc-100 mb-4">
+                            <i class="fa-solid fa-inbox text-2xl text-zinc-300"></i>
+                        </div>
+                        <p class="text-sm font-medium text-zinc-600">Aucune tache active</p>
+                    </div>
+                `;
+            }
         }
 
         window.syncDOMToData = function() {
@@ -941,32 +1054,24 @@
         window.actionTask = function(id, action) {
             window.syncDOMToData();
             const task = window.tasksData.find(x => x.id == id);
-            let msg = "";
             
             if (action === 'start') {
                 task.status = 'started';
                 task.start = window.getTime();
-                msg = `▶️ ${window.currentAgent} a démarré: <br>• ${task.name}`;
-                sendTelegramMessage(msg);
             } else {
                 if (!task.start) {
-                    msg = `⏭️ ${window.currentAgent} a marqué comme Non traitée : ${task.name}`;
                     task.status = 'finished';
                     task.end = null;
                 } else {
-                    if (task.relai) {
-                        msg = `🛑 ${window.currentAgent} a terminé son tour sur: <br>• ${task.name}\n🔄 Passation à : ${task.relai} (qui va continuer)`;
-                    } else {
-                        msg = `🛑 ${window.currentAgent} a fini : <br>• ${task.name}`;
-                    }
                     task.status = 'finished';
                     task.end = window.getTime();
                 }
-                
-                sendTelegramMessage(msg);
             }
+            
+            window.updateTelegramStatus(); // Edite l'message en live sur le Bot Telegram
+            
             window.renderTasks();
-            window.saveCurrentSession(); // Sauvegarde l'état de la session
+            window.saveCurrentSession(); 
         }
 
         window.sendAlert = function(id) {
@@ -974,10 +1079,12 @@
             const task = window.tasksData.find(x => x.id == id);
             const msgInput = task.comment;
             if (!msgInput) return alert("Entrez un commentaire.");
-            sendTelegramMessage(`⚠️ ALERTE de ${window.currentAgent} sur [${task.name}]: ${msgInput}`);
-            task.comment = '';
+            
+            sendNewTelegramMessage(`⚠️ <b>ALERTE</b> de <b>${window.currentAgent}</b> sur [<b>${window.escapeHTML(task.name)}</b>]:\n💬 ${window.escapeHTML(msgInput)}`);
+            
+            window.updateTelegramStatus(); // On update le global au cas où le commentaire a changé
             window.renderTasks();
-            window.saveCurrentSession(); // Sauvegarde l'état après suppression du commentaire envoyé
+            window.saveCurrentSession();
         }
 
         window.finalizeReport = async function() {
@@ -988,8 +1095,8 @@
             btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> <span>Envoi en cours...</span>';
             btn.disabled = true;
 
-            let reportText = `\n━━━━━━━━━━━━━━━━━━━━━━\n`;
-            reportText += `📊 RAPPORT DE FIN DE POSTE : ${window.currentAgent}\n`;
+            let reportText = `━━━━━━━━━━━━━━━━━━━━━━\n`;
+            reportText += `📊 <b>RAPPORT DE FIN DE POSTE : ${window.currentAgent}</b>\n`;
             reportText += `━━━━━━━━━━━━━━━━━━━━━━\n`;
 
             let reportData = {
@@ -999,7 +1106,7 @@
             };
 
             window.tasksData.forEach(t => {
-                reportText += `\n☑️ ${t.name}\n`;
+                reportText += `\n☑️ <b>${window.escapeHTML(t.name)}</b>\n`;
                 
                 let taskData = {
                     name: t.name,
@@ -1013,28 +1120,28 @@
 
                 if (t.start && t.end) {
                     if (t.relai) {
-                        reportText += `• État: Terminé (Passation)\n• Durée: ${t.start} ⮕ ${t.end}\n• 🔄 Passation à: ${t.relai}\n`;
+                        reportText += `• État: Terminé (Passation)\n• Durée: ${t.start} ⮕ ${t.end}\n• 🔄 Passation à: ${window.escapeHTML(t.relai)}\n`;
                     } else {
                         reportText += `• État: Terminé (Full)\n• Durée: ${t.start} ⮕ ${t.end}\n`;
                     }
                 } else if (t.start && !t.end) {
                     reportText += `• État: EN COURS (Non terminé)\n• Début à: ${t.start}\n`;
                     if (t.relai) {
-                        reportText += `• 🔄 Passation à: ${t.relai}\n`;
+                        reportText += `• 🔄 Passation à: ${window.escapeHTML(t.relai)}\n`;
                     }
                 } else {
                     reportText += `• État: Non traitée\n`;
                 }
                 
                 if (t.comment) {
-                    reportText += `• 💬 Note: ${t.comment}\n`;
+                    reportText += `• 💬 Note: ${window.escapeHTML(t.comment)}\n`;
                 }
             });
 
-            reportText += `\n👋 ${window.currentAgent} a quitté son poste.`;
+            reportText += `\n👋 <b>${window.currentAgent}</b> a quitté son poste.`;
             reportText += `\n━━━━━━━━━━━━━━━━━━━━━━\n`;
             
-            await sendTelegramMessage(reportText);
+            await sendNewTelegramMessage(reportText);
 
             try {
                 const newReportRef = push(ref(db, "reports"));
@@ -1047,7 +1154,7 @@
             }
 
             alert("Rapport envoyé au Bot ! La session est maintenant fermée.");
-            window.clearCurrentSession(); // On supprime la session sauvegardée 7it salina
+            window.clearCurrentSession(); 
             window.location.reload();
         }
 
@@ -1086,7 +1193,7 @@
                 });
                 
                 reportsArray.sort((a, b) => new Date(b.date) - new Date(a.date));
-                window.historyReports = reportsArray; // Sauvegarde l'historique dans la variable globale
+                window.historyReports = reportsArray; 
 
                 let html = '<div class="space-y-4">';
                 reportsArray.forEach((data, index) => {
@@ -1154,7 +1261,6 @@
             document.getElementById('history-modal').classList.add('hidden');
         }
 
-        // --- NOUVELLE FONCTION : CHARGER UNE SESSION DEPUIS L'HISTORIQUE ---
         window.loadHistoricalSession = function(index) {
             if (window.tasksData.length > 0) {
                 if (!confirm("⚠️ Attention : Une session est déjà en cours. Charger cet historique va écraser vos tâches actuelles. Voulez-vous continuer ?")) {
@@ -1173,8 +1279,13 @@
             }
             agentSelect.value = report.agent;
 
+            // VERROUILLER LE SELECT AGENT
+            agentSelect.disabled = true;
+            agentSelect.classList.add('opacity-60', 'cursor-not-allowed');
+
             window.tasksData = [];
             window.selectedTasksSet.clear();
+            window.currentTelegramMessageId = null; // Reset l'ID dyal telegram bach ydir message jdid mn l'historique
 
             report.tasks.forEach(t => {
                 window.tasksData.push({
@@ -1200,13 +1311,14 @@
 
             window.closeHistory();
             window.renderTasks();
-            window.updateTasksUI(); // Met à jour les cases à cocher si la catégorie est ouverte
+            window.updateTasksUI(); 
             
-            window.saveCurrentSession(); // Sauvegarde l'état d'historique f localstorage
+            window.saveCurrentSession(); 
+            window.updateTelegramStatus(); // Creation dyal message jdid sur Telegram pour l'historique chargé
+            
             alert(`✅ La session de ${window.currentAgent} a été chargée avec succès !`);
         }
 
-        // Lancement de la restauration au chargement si l'utilisateur est connecté
         if (sessionStorage.getItem('auth_token') === 'true') {
             window.restoreCurrentSession();
         }
