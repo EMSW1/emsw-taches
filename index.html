@@ -69,7 +69,7 @@
                     <button id="btn-admin-panel" onclick="showAdminPanel()" class="hidden px-4 py-2 bg-zinc-900 border border-zinc-900 text-white text-xs font-semibold rounded-xl hover:bg-zinc-800 transition-all shadow-sm flex items-center gap-2">
                         <i class="fa-solid fa-shield-halved"></i> Super Admin
                     </button>
-                    <button onclick="showHistory()" class="px-4 py-2 bg-white border border-zinc-200 text-zinc-700 text-xs font-semibold rounded-xl hover:bg-zinc-50 hover:text-zinc-900 transition-all shadow-sm flex items-center gap-2">
+                    <button id="btn-history" onclick="showHistory()" class="hidden px-4 py-2 bg-white border border-zinc-200 text-zinc-700 text-xs font-semibold rounded-xl hover:bg-zinc-50 hover:text-zinc-900 transition-all shadow-sm flex items-center gap-2">
                         <i class="fa-solid fa-clock-rotate-left"></i> Historique
                     </button>
                     <div id="session-indicator" class="flex items-center gap-2 px-3 py-1.5 bg-white border border-zinc-200 rounded-full shadow-sm">
@@ -101,7 +101,7 @@
                                 <div class="relative">
                                     <select id="agent-select" class="w-full bg-zinc-50 border border-zinc-200 rounded-xl pl-4 pr-10 py-3 text-sm font-medium text-zinc-700 focus:ring-2 focus:ring-zinc-900 focus:border-transparent outline-none transition-all appearance-none cursor-pointer">
                                         <option value="" disabled selected>Sélectionner un nom...</option>
-                                        </select>
+                                    </select>
                                     <div class="absolute inset-y-0 right-0 pr-4 flex items-center pointer-events-none">
                                         <i class="fa-solid fa-chevron-down text-zinc-400 text-xs"></i>
                                     </div>
@@ -112,12 +112,12 @@
                                 <label class="block text-xs font-semibold text-zinc-500 uppercase tracking-wider mb-3">Catégorie</label>
                                 
                                 <div id="categories-container" class="flex flex-wrap bg-zinc-100 p-1 rounded-xl mb-5 gap-1">
-                                    </div>
+                                </div>
 
                                 <div id="entities-container" class="hidden mb-5">
                                     <label class="block text-xs font-semibold text-zinc-500 uppercase tracking-wider mb-2">Entité</label>
                                     <div id="entities-list" class="flex flex-wrap gap-2">
-                                        </div>
+                                    </div>
                                 </div>
 
                                 <div>
@@ -179,7 +179,7 @@
         </div>
 
         <div id="admin-modal" class="fixed inset-0 bg-zinc-900/40 backdrop-blur-sm hidden z-50 flex items-center justify-center p-4 transition-opacity">
-            <div class="bg-white rounded-2xl shadow-2xl w-full max-w-3xl max-h-[90vh] flex flex-col overflow-hidden border border-zinc-100">
+            <div class="bg-white rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col overflow-hidden border border-zinc-100">
                 <div class="p-5 border-b border-zinc-100 flex justify-between items-center bg-zinc-50/50">
                     <div class="flex items-center gap-3">
                         <div class="w-8 h-8 rounded-full bg-zinc-900 flex items-center justify-center text-white shadow-sm">
@@ -193,33 +193,73 @@
                 </div>
                 
                 <div class="p-6 overflow-y-auto flex-1 bg-zinc-50/30 grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div class="bg-white p-5 rounded-xl border border-zinc-200 shadow-sm">
-                        <h3 class="text-sm font-bold mb-3 flex items-center gap-2"><i class="fa-solid fa-user-plus text-zinc-400"></i> Ajouter un Nom (Agent)</h3>
-                        <input type="text" id="admin-agent-input" placeholder="Ex: NOUVEAU AGENT" class="w-full mb-3 bg-zinc-50 border border-zinc-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-zinc-900 outline-none">
-                        <button onclick="addAgentAdmin()" class="w-full bg-zinc-900 text-white py-2 rounded-lg text-sm font-semibold hover:bg-zinc-800 transition-all">Ajouter Nom</button>
+                    <div class="bg-white p-5 rounded-xl border border-zinc-200 shadow-sm flex flex-col justify-between">
+                        <div>
+                            <h3 class="text-sm font-bold mb-3 flex items-center gap-2"><i class="fa-solid fa-user-plus text-zinc-400"></i> Ajouter un Agent</h3>
+                            <input type="text" id="admin-agent-input" placeholder="Ex: NOUVEAU AGENT" class="w-full mb-3 bg-zinc-50 border border-zinc-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-zinc-900 outline-none">
+                            <button onclick="addAgentAdmin()" class="w-full bg-zinc-900 text-white py-2 rounded-lg text-sm font-semibold hover:bg-zinc-800 transition-all">Ajouter Nom</button>
+                        </div>
+                        <div class="mt-5 pt-4 border-t border-zinc-100">
+                            <h3 class="text-xs font-bold mb-2 text-rose-600 flex items-center gap-1"><i class="fa-solid fa-trash"></i> Supprimer un Agent</h3>
+                            <div class="flex gap-2">
+                                <select id="admin-del-agent" class="flex-1 bg-zinc-50 border border-zinc-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-rose-500 outline-none appearance-none"></select>
+                                <button onclick="deleteAgentAdmin()" class="bg-rose-50 border border-rose-200 text-rose-600 px-4 rounded-lg hover:bg-rose-100 hover:border-rose-300 transition-all"><i class="fa-solid fa-xmark"></i></button>
+                            </div>
+                        </div>
                     </div>
 
-                    <div class="bg-white p-5 rounded-xl border border-zinc-200 shadow-sm">
-                        <h3 class="text-sm font-bold mb-3 flex items-center gap-2"><i class="fa-solid fa-folder-plus text-zinc-400"></i> Ajouter une Catégorie</h3>
-                        <input type="text" id="admin-cat-input" placeholder="Ex: NOUVELLE CATEGORIE" class="w-full mb-3 bg-zinc-50 border border-zinc-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-zinc-900 outline-none">
-                        <button onclick="addCategoryAdmin()" class="w-full bg-zinc-900 text-white py-2 rounded-lg text-sm font-semibold hover:bg-zinc-800 transition-all">Ajouter Catégorie</button>
+                    <div class="bg-white p-5 rounded-xl border border-zinc-200 shadow-sm flex flex-col justify-between">
+                        <div>
+                            <h3 class="text-sm font-bold mb-3 flex items-center gap-2"><i class="fa-solid fa-folder-plus text-zinc-400"></i> Ajouter une Catégorie</h3>
+                            <input type="text" id="admin-cat-input" placeholder="Ex: NOUVELLE CATEGORIE" class="w-full mb-3 bg-zinc-50 border border-zinc-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-zinc-900 outline-none">
+                            <button onclick="addCategoryAdmin()" class="w-full bg-zinc-900 text-white py-2 rounded-lg text-sm font-semibold hover:bg-zinc-800 transition-all">Ajouter Catégorie</button>
+                        </div>
+                        <div class="mt-5 pt-4 border-t border-zinc-100">
+                            <h3 class="text-xs font-bold mb-2 text-rose-600 flex items-center gap-1"><i class="fa-solid fa-trash"></i> Supprimer une Catégorie</h3>
+                            <div class="flex gap-2">
+                                <select id="admin-del-cat" class="flex-1 bg-zinc-50 border border-zinc-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-rose-500 outline-none appearance-none"></select>
+                                <button onclick="deleteCategoryAdmin()" class="bg-rose-50 border border-rose-200 text-rose-600 px-4 rounded-lg hover:bg-rose-100 hover:border-rose-300 transition-all"><i class="fa-solid fa-xmark"></i></button>
+                            </div>
+                        </div>
                     </div>
 
-                    <div class="bg-white p-5 rounded-xl border border-zinc-200 shadow-sm">
-                        <h3 class="text-sm font-bold mb-3 flex items-center gap-2"><i class="fa-solid fa-sitemap text-zinc-400"></i> Ajouter une Entité</h3>
-                        <select id="admin-sel-cat-ent" class="w-full mb-3 bg-zinc-50 border border-zinc-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-zinc-900 outline-none"></select>
-                        <input type="text" id="admin-ent-input" placeholder="Ex: EMS5, ALL..." class="w-full mb-3 bg-zinc-50 border border-zinc-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-zinc-900 outline-none">
-                        <button onclick="addEntityAdmin()" class="w-full bg-zinc-900 text-white py-2 rounded-lg text-sm font-semibold hover:bg-zinc-800 transition-all">Ajouter Entité</button>
+                    <div class="bg-white p-5 rounded-xl border border-zinc-200 shadow-sm flex flex-col justify-between">
+                        <div>
+                            <h3 class="text-sm font-bold mb-3 flex items-center gap-2"><i class="fa-solid fa-sitemap text-zinc-400"></i> Ajouter une Entité</h3>
+                            <select id="admin-sel-cat-ent" onchange="window.onAdminCatEntChange()" class="w-full mb-3 bg-zinc-50 border border-zinc-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-zinc-900 outline-none appearance-none"></select>
+                            <input type="text" id="admin-ent-input" placeholder="Ex: EMS5, ALL..." class="w-full mb-3 bg-zinc-50 border border-zinc-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-zinc-900 outline-none">
+                            <button onclick="addEntityAdmin()" class="w-full bg-zinc-900 text-white py-2 rounded-lg text-sm font-semibold hover:bg-zinc-800 transition-all">Ajouter Entité</button>
+                        </div>
+                        <div class="mt-5 pt-4 border-t border-zinc-100">
+                            <h3 class="text-xs font-bold mb-2 text-rose-600 flex items-center gap-1"><i class="fa-solid fa-trash"></i> Supprimer une Entité</h3>
+                            <div class="flex gap-2">
+                                <select id="admin-del-ent" class="flex-1 bg-zinc-50 border border-zinc-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-rose-500 outline-none appearance-none">
+                                    <option value="" disabled selected>Sélectionnez d'abord la catégorie en haut</option>
+                                </select>
+                                <button onclick="deleteEntityAdmin()" class="bg-rose-50 border border-rose-200 text-rose-600 px-4 rounded-lg hover:bg-rose-100 hover:border-rose-300 transition-all"><i class="fa-solid fa-xmark"></i></button>
+                            </div>
+                        </div>
                     </div>
 
-                    <div class="bg-white p-5 rounded-xl border border-zinc-200 shadow-sm">
-                        <h3 class="text-sm font-bold mb-3 flex items-center gap-2"><i class="fa-solid fa-list-check text-zinc-400"></i> Ajouter une Tâche</h3>
-                        <select id="admin-sel-cat-task" class="w-full mb-3 bg-zinc-50 border border-zinc-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-zinc-900 outline-none"></select>
-                        <select id="admin-sel-ent-task" class="w-full mb-3 bg-zinc-50 border border-zinc-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-zinc-900 outline-none">
-                            <option value="" disabled selected>Choisir une entité...</option>
-                        </select>
-                        <input type="text" id="admin-task-input" placeholder="Ex: NOUVELLE TACHE" class="w-full mb-3 bg-zinc-50 border border-zinc-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-zinc-900 outline-none">
-                        <button onclick="addTaskAdmin()" class="w-full bg-zinc-900 text-white py-2 rounded-lg text-sm font-semibold hover:bg-zinc-800 transition-all">Ajouter Tâche</button>
+                    <div class="bg-white p-5 rounded-xl border border-zinc-200 shadow-sm flex flex-col justify-between">
+                        <div>
+                            <h3 class="text-sm font-bold mb-3 flex items-center gap-2"><i class="fa-solid fa-list-check text-zinc-400"></i> Ajouter une Tâche</h3>
+                            <select id="admin-sel-cat-task" onchange="window.onAdminCatTaskChange()" class="w-full mb-3 bg-zinc-50 border border-zinc-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-zinc-900 outline-none appearance-none"></select>
+                            <select id="admin-sel-ent-task" onchange="window.onAdminEntTaskChange()" class="w-full mb-3 bg-zinc-50 border border-zinc-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-zinc-900 outline-none appearance-none">
+                                <option value="" disabled selected>Choisir une entité...</option>
+                            </select>
+                            <input type="text" id="admin-task-input" placeholder="Ex: NOUVELLE TACHE" class="w-full mb-3 bg-zinc-50 border border-zinc-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-zinc-900 outline-none">
+                            <button onclick="addTaskAdmin()" class="w-full bg-zinc-900 text-white py-2 rounded-lg text-sm font-semibold hover:bg-zinc-800 transition-all">Ajouter Tâche</button>
+                        </div>
+                        <div class="mt-5 pt-4 border-t border-zinc-100">
+                            <h3 class="text-xs font-bold mb-2 text-rose-600 flex items-center gap-1"><i class="fa-solid fa-trash"></i> Supprimer une Tâche</h3>
+                            <div class="flex gap-2">
+                                <select id="admin-del-task" class="flex-1 bg-zinc-50 border border-zinc-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-rose-500 outline-none appearance-none">
+                                    <option value="" disabled selected>Sélectionnez catégorie et entité</option>
+                                </select>
+                                <button onclick="deleteTaskAdmin()" class="bg-rose-50 border border-rose-200 text-rose-600 px-4 rounded-lg hover:bg-rose-100 hover:border-rose-300 transition-all"><i class="fa-solid fa-xmark"></i></button>
+                            </div>
+                        </div>
                     </div>
                 </div>
                 
@@ -287,6 +327,7 @@
             const role = sessionStorage.getItem('user_role');
             if (role === 'SUPER ADMIN' || role === 'SUPER_ADMIN' || role === 'admin') {
                 document.getElementById('btn-admin-panel').classList.remove('hidden');
+                document.getElementById('btn-history').classList.remove('hidden');
             }
         }
 
@@ -356,6 +397,7 @@
                     
                     checkAdminAccess();
                     initUI();
+                    if(window.restoreCurrentSession) window.restoreCurrentSession();
                 } else {
                     errorMsg.innerText = 'Accès refusé.';
                     errorMsg.classList.remove('hidden');
@@ -378,6 +420,7 @@
             document.getElementById('app-content').style.display = 'none';
             document.getElementById('login-screen').style.display = 'flex';
             document.getElementById('btn-admin-panel').classList.add('hidden');
+            document.getElementById('btn-history').classList.add('hidden');
         }
 
         document.addEventListener('DOMContentLoaded', () => {
@@ -386,17 +429,19 @@
                 document.getElementById('app-content').style.display = 'flex';
                 checkAdminAccess();
                 initUI();
+                // Note: restoreCurrentSession is called at the end of the module script below
             }
         });
     </script>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
-        import { getFirestore, collection, addDoc, query, where, getDocs, orderBy } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+        import { getDatabase, ref, push, set, query, orderByChild, startAt, get } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyCSk9I4yAy0cP5j_zIcAcM2STY0Jntaxi8",
             authDomain: "mailers-taches.firebaseapp.com",
+            databaseURL: "https://mailers-taches-default-rtdb.firebaseio.com",
             projectId: "mailers-taches",
             storageBucket: "mailers-taches.firebasestorage.app",
             messagingSenderId: "361140017614",
@@ -405,7 +450,7 @@
         };
 
         const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
+        const db = getDatabase(app);
 
         const TELEGRAM_TOKEN = '8430058586:AAH6HaJ1TKF-sO-9uGmRQPp-OatEn069jB0';
         const TELEGRAM_CHAT_ID = '-5133720332';
@@ -429,12 +474,73 @@
         window.currentAgent = "";
         window.tasksData = [];
         window.selectedTasksSet = new Set();
+        window.historyReports = []; // Tableau global bach nhaz fih l'historique
 
         window.getTime = function() {
             return new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
         }
 
-        // --- ADMIN FUNCTIONS ---
+        // --- GESTION DE LA PERSISTANCE (SAUVEGARDE DE SESSION PAR PC) ---
+        window.saveCurrentSession = function() {
+            if (!window.currentAgent && window.tasksData.length === 0) return;
+            const sessionData = {
+                agent: window.currentAgent,
+                tasksData: window.tasksData,
+                selectedTasks: Array.from(window.selectedTasksSet)
+            };
+            localStorage.setItem('active_session', JSON.stringify(sessionData));
+        };
+
+        window.clearCurrentSession = function() {
+            localStorage.removeItem('active_session');
+        };
+
+        window.restoreCurrentSession = function() {
+            const savedSession = localStorage.getItem('active_session');
+            if (savedSession) {
+                try {
+                    const data = JSON.parse(savedSession);
+                    if (data.agent && data.tasksData && data.tasksData.length > 0) {
+                        window.currentAgent = data.agent;
+                        window.tasksData = data.tasksData;
+                        window.selectedTasksSet = new Set(data.selectedTasks || []);
+
+                        // Restaurer l'interface
+                        const agentSelect = document.getElementById('agent-select');
+                        if (agentSelect) {
+                            let agentExists = [...agentSelect.options].some(o => o.value === data.agent);
+                            if (!agentExists) {
+                                agentSelect.innerHTML += `<option value="${data.agent}">${data.agent}</option>`;
+                            }
+                            agentSelect.value = data.agent;
+                        }
+
+                        document.getElementById('report-card').classList.remove('opacity-40', 'pointer-events-none');
+                        document.getElementById('start-btn-text').innerText = "Ajouter d'autres Tâches";
+
+                        document.getElementById('session-indicator').innerHTML = `
+                            <div class="w-2 h-2 bg-emerald-500 rounded-full animate-pulse shadow-[0_0_8px_rgba(16,185,129,0.6)]"></div>
+                            <span class="text-[10px] font-bold uppercase tracking-widest text-emerald-700">En Ligne: ${window.currentAgent}</span>
+                        `;
+
+                        document.getElementById('selected-count').innerText = window.selectedTasksSet.size;
+
+                        window.renderTasks();
+                        console.log("Session précédente restaurée avec succès !");
+                    }
+                } catch (e) {
+                    console.error("Erreur de restauration de session", e);
+                }
+            }
+        };
+
+        window.syncAndSave = function() {
+            window.syncDOMToData();
+            window.saveCurrentSession();
+        };
+        // --- FIN DE LA PERSISTANCE ---
+
+        // --- ADMIN FUNCTIONS (Ajout & Suppression) ---
         window.showAdminPanel = function() { document.getElementById('admin-modal').classList.remove('hidden'); }
         window.closeAdminPanel = function() { document.getElementById('admin-modal').classList.add('hidden'); }
         
@@ -442,32 +548,60 @@
             localStorage.setItem('admin_config', JSON.stringify(window.tasksConfig));
         }
 
+        // --- GESTION DES LISTES DÉROULANTES ADMIN ---
         window.updateAdminSelects = function() {
-            const catEntSelect = document.getElementById('admin-sel-cat-ent');
-            const catTaskSelect = document.getElementById('admin-sel-cat-task');
-            
-            let catOptions = '<option value="" disabled selected>Choisir une catégorie...</option>';
-            Object.keys(window.tasksConfig).forEach(cat => {
-                catOptions += `<option value="${cat}">${cat}</option>`;
-            });
-            
-            if(catEntSelect) catEntSelect.innerHTML = catOptions;
-            if(catTaskSelect) {
-                catTaskSelect.innerHTML = catOptions;
-                catTaskSelect.onchange = function() {
-                    const entTaskSelect = document.getElementById('admin-sel-ent-task');
-                    const cat = this.value;
-                    let entOptions = '<option value="" disabled selected>Choisir une entité...</option>';
-                    if(cat && window.tasksConfig[cat]) {
-                        Object.keys(window.tasksConfig[cat]).forEach(ent => {
-                            entOptions += `<option value="${ent}">${ent}</option>`;
-                        });
-                    }
-                    entTaskSelect.innerHTML = entOptions;
-                };
+            // Update Agent Delete Select
+            const agentDelSelect = document.getElementById('admin-del-agent');
+            if(agentDelSelect) {
+                agentDelSelect.innerHTML = '<option value="" disabled selected>Choisir un agent...</option>' + window.allAgents.map(a => `<option value="${a}">${a}</option>`).join('');
             }
+
+            // Update Categories Selects
+            let catOptions = '<option value="" disabled selected>Choisir une catégorie...</option>';
+            Object.keys(window.tasksConfig).forEach(cat => { catOptions += `<option value="${cat}">${cat}</option>`; });
+            
+            document.getElementById('admin-sel-cat-ent').innerHTML = catOptions;
+            document.getElementById('admin-sel-cat-task').innerHTML = catOptions;
+            
+            const catDelSelect = document.getElementById('admin-del-cat');
+            if(catDelSelect) catDelSelect.innerHTML = catOptions;
+
+            // Reset dependent selects
+            document.getElementById('admin-del-ent').innerHTML = '<option value="" disabled selected>Sélectionnez d\'abord la catégorie en haut</option>';
+            document.getElementById('admin-sel-ent-task').innerHTML = '<option value="" disabled selected>Choisir une entité...</option>';
+            document.getElementById('admin-del-task').innerHTML = '<option value="" disabled selected>Sélectionnez catégorie et entité</option>';
         }
 
+        window.onAdminCatEntChange = function() {
+            const cat = document.getElementById('admin-sel-cat-ent').value;
+            let opts = '<option value="" disabled selected>Choisir une entité...</option>';
+            if(cat && window.tasksConfig[cat]) {
+                Object.keys(window.tasksConfig[cat]).forEach(ent => { opts += `<option value="${ent}">${ent}</option>`; });
+            }
+            document.getElementById('admin-del-ent').innerHTML = opts;
+        }
+
+        window.onAdminCatTaskChange = function() {
+            const cat = document.getElementById('admin-sel-cat-task').value;
+            let opts = '<option value="" disabled selected>Choisir une entité...</option>';
+            if(cat && window.tasksConfig[cat]) {
+                Object.keys(window.tasksConfig[cat]).forEach(ent => { opts += `<option value="${ent}">${ent}</option>`; });
+            }
+            document.getElementById('admin-sel-ent-task').innerHTML = opts;
+            document.getElementById('admin-del-task').innerHTML = '<option value="" disabled selected>Sélectionnez d\'abord l\'entité en haut</option>';
+        }
+
+        window.onAdminEntTaskChange = function() {
+            const cat = document.getElementById('admin-sel-cat-task').value;
+            const ent = document.getElementById('admin-sel-ent-task').value;
+            let opts = '<option value="" disabled selected>Choisir une tâche...</option>';
+            if(cat && ent && window.tasksConfig[cat][ent]) {
+                window.tasksConfig[cat][ent].forEach(task => { opts += `<option value="${task}">${task}</option>`; });
+            }
+            document.getElementById('admin-del-task').innerHTML = opts;
+        }
+
+        // --- AJOUT ADMIN ---
         window.addAgentAdmin = function() {
             const val = document.getElementById('admin-agent-input').value.trim().toUpperCase();
             if(!val) return;
@@ -517,6 +651,54 @@
                 alert("Tâche ajoutée !");
                 document.getElementById('admin-task-input').value = '';
             } else { alert("Cette tâche existe déjà."); }
+        }
+
+        // --- SUPPRESSION ADMIN ---
+        window.deleteAgentAdmin = function() {
+            const val = document.getElementById('admin-del-agent').value;
+            if(!val) return alert("Sélectionnez un agent à supprimer.");
+            if(confirm(`Êtes-vous sûr de vouloir supprimer l'agent : ${val} ?`)) {
+                window.allAgents = window.allAgents.filter(a => a !== val);
+                localStorage.setItem('admin_agents', JSON.stringify(window.allAgents));
+                window.initUI();
+                alert("Agent supprimé !");
+            }
+        }
+
+        window.deleteCategoryAdmin = function() {
+            const val = document.getElementById('admin-del-cat').value;
+            if(!val) return alert("Sélectionnez une catégorie à supprimer.");
+            if(confirm(`⚠️ Supprimer la catégorie "${val}" supprimera toutes les entités et tâches qui y sont liées. Continuer ?`)) {
+                delete window.tasksConfig[val];
+                window.saveConfig();
+                window.initUI();
+                alert("Catégorie supprimée !");
+            }
+        }
+
+        window.deleteEntityAdmin = function() {
+            const cat = document.getElementById('admin-sel-cat-ent').value;
+            const ent = document.getElementById('admin-del-ent').value;
+            if(!cat || !ent) return alert("Sélectionnez une catégorie et une entité.");
+            if(confirm(`⚠️ Supprimer l'entité "${ent}" de la catégorie "${cat}" ?`)) {
+                delete window.tasksConfig[cat][ent];
+                window.saveConfig();
+                window.initUI();
+                alert("Entité supprimée !");
+            }
+        }
+
+        window.deleteTaskAdmin = function() {
+            const cat = document.getElementById('admin-sel-cat-task').value;
+            const ent = document.getElementById('admin-sel-ent-task').value;
+            const task = document.getElementById('admin-del-task').value;
+            if(!cat || !ent || !task) return alert("Sélectionnez une catégorie, une entité et une tâche.");
+            if(confirm(`Supprimer la tâche "${task}" ?`)) {
+                window.tasksConfig[cat][ent] = window.tasksConfig[cat][ent].filter(t => t !== task);
+                window.saveConfig();
+                window.initUI();
+                alert("Tâche supprimée !");
+            }
         }
 
         window.resetToDefaults = function() {
@@ -606,6 +788,7 @@
                 window.selectedTasksSet.delete(taskName);
             }
             document.getElementById('selected-count').innerText = window.selectedTasksSet.size;
+            window.saveCurrentSession();
         }
 
         window.initSession = function() {
@@ -662,6 +845,7 @@
             document.getElementById('start-btn-text').innerText = "Ajouter d'autres Tâches";
 
             window.renderTasks();
+            window.saveCurrentSession(); // Sauvegarde l'état de la session
         }
 
         window.syncDOMToData = function() {
@@ -730,7 +914,7 @@
                                     <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                                         <i class="fa-regular fa-comment-dots text-zinc-400"></i>
                                     </div>
-                                    <input id="comm-${t.id}" type="text" value="${(t.comment || '').replace(/"/g, '&quot;')}" placeholder="Ajouter une note ou signaler un problème..." class="w-full text-sm bg-zinc-50 border border-zinc-200 rounded-xl pl-9 pr-3 py-2.5 outline-none focus:border-zinc-400 focus:bg-white transition-all">
+                                    <input id="comm-${t.id}" type="text" value="${(t.comment || '').replace(/"/g, '&quot;')}" onchange="window.syncAndSave()" placeholder="Ajouter une note ou signaler un problème..." class="w-full text-sm bg-zinc-50 border border-zinc-200 rounded-xl pl-9 pr-3 py-2.5 outline-none focus:border-zinc-400 focus:bg-white transition-all">
                                 </div>
                                 <button onclick="sendAlert('${t.id}')" class="px-4 py-2.5 bg-rose-50 text-rose-600 border border-rose-100 rounded-xl text-xs font-bold hover:bg-rose-100 transition-all" title="Alerter le Bot">
                                     <i class="fa-solid fa-triangle-exclamation"></i>
@@ -740,7 +924,7 @@
                                 <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                                     <i class="fa-solid fa-arrow-right-arrow-left text-zinc-400 text-xs"></i>
                                 </div>
-                                <select id="relai-${t.id}" class="w-full text-sm bg-zinc-50 border border-zinc-200 rounded-xl pl-9 pr-3 py-2.5 outline-none focus:border-zinc-400 focus:bg-white transition-all appearance-none cursor-pointer">
+                                <select id="relai-${t.id}" onchange="window.syncAndSave()" class="w-full text-sm bg-zinc-50 border border-zinc-200 rounded-xl pl-9 pr-3 py-2.5 outline-none focus:border-zinc-400 focus:bg-white transition-all appearance-none cursor-pointer">
                                     ${relaiOptions}
                                 </select>
                                 <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
@@ -782,6 +966,7 @@
                 sendTelegramMessage(msg);
             }
             window.renderTasks();
+            window.saveCurrentSession(); // Sauvegarde l'état de la session
         }
 
         window.sendAlert = function(id) {
@@ -792,6 +977,7 @@
             sendTelegramMessage(`⚠️ ALERTE de ${window.currentAgent} sur [${task.name}]: ${msgInput}`);
             task.comment = '';
             window.renderTasks();
+            window.saveCurrentSession(); // Sauvegarde l'état après suppression du commentaire envoyé
         }
 
         window.finalizeReport = async function() {
@@ -851,8 +1037,9 @@
             await sendTelegramMessage(reportText);
 
             try {
+                const newReportRef = push(ref(db, "reports"));
                 await Promise.race([
-                    addDoc(collection(db, "reports"), reportData),
+                    set(newReportRef, reportData),
                     new Promise(resolve => setTimeout(resolve, 2000))
                 ]);
             } catch (e) {
@@ -860,6 +1047,7 @@
             }
 
             alert("Rapport envoyé au Bot ! La session est maintenant fermée.");
+            window.clearCurrentSession(); // On supprime la session sauvegardée 7it salina
             window.location.reload();
         }
 
@@ -878,10 +1066,11 @@
                 const fiveDaysAgo = new Date();
                 fiveDaysAgo.setDate(fiveDaysAgo.getDate() - 5);
                 
-                const q = query(collection(db, "reports"), where("date", ">=", fiveDaysAgo.toISOString()), orderBy("date", "desc"));
-                const querySnapshot = await getDocs(q);
+                const reportsRef = ref(db, "reports");
+                const q = query(reportsRef, orderByChild("date"), startAt(fiveDaysAgo.toISOString()));
+                const snapshot = await get(q);
                 
-                if (querySnapshot.empty) {
+                if (!snapshot.exists()) {
                     historyContent.innerHTML = `
                         <div class="flex flex-col items-center justify-center py-12 text-zinc-400">
                             <i class="fa-regular fa-folder-open text-3xl mb-4 text-zinc-300"></i>
@@ -891,22 +1080,37 @@
                     return;
                 }
 
+                let reportsArray = [];
+                snapshot.forEach((childSnapshot) => {
+                    reportsArray.push(childSnapshot.val());
+                });
+                
+                reportsArray.sort((a, b) => new Date(b.date) - new Date(a.date));
+                window.historyReports = reportsArray; // Sauvegarde l'historique dans la variable globale
+
                 let html = '<div class="space-y-4">';
-                querySnapshot.forEach((doc) => {
-                    const data = doc.data();
+                reportsArray.forEach((data, index) => {
                     const date = new Date(data.date).toLocaleString('fr-FR', {
                         day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit'
                     });
                     html += `
-                        <div class="border border-zinc-200 p-5 rounded-2xl bg-white shadow-sm">
-                            <div class="flex justify-between items-center mb-4 border-b border-zinc-100 pb-3">
-                                <div class="flex items-center gap-2">
-                                    <div class="w-8 h-8 rounded-full bg-zinc-100 flex items-center justify-center text-zinc-600 font-bold text-xs">
-                                        ${data.agent.charAt(0)}
+                        <div class="border border-zinc-200 p-5 rounded-2xl bg-white shadow-sm hover:border-zinc-300 transition-colors">
+                            <div class="flex flex-col md:flex-row md:justify-between md:items-center mb-4 border-b border-zinc-100 pb-3 gap-3">
+                                <div class="flex justify-between w-full">
+                                    <div class="flex items-center gap-2">
+                                        <div class="w-8 h-8 rounded-full bg-zinc-100 flex items-center justify-center text-zinc-600 font-bold text-xs">
+                                            ${data.agent.charAt(0)}
+                                        </div>
+                                        <span class="font-bold text-zinc-900">${data.agent}</span>
                                     </div>
-                                    <span class="font-bold text-zinc-900">${data.agent}</span>
+                                    <span class="text-xs font-semibold text-zinc-500 bg-zinc-100 px-2.5 py-1 rounded-lg md:hidden">${date}</span>
                                 </div>
-                                <span class="text-xs font-semibold text-zinc-500 bg-zinc-100 px-2.5 py-1 rounded-lg">${date}</span>
+                                <div class="flex items-center gap-3 w-full md:w-auto justify-end">
+                                    <span class="text-xs font-semibold text-zinc-500 bg-zinc-100 px-2.5 py-1 rounded-lg hidden md:block">${date}</span>
+                                    <button onclick="loadHistoricalSession(${index})" class="px-3 py-1.5 bg-zinc-900 text-white rounded-lg text-xs font-semibold hover:bg-zinc-800 transition-all shadow-sm whitespace-nowrap">
+                                        <i class="fa-solid fa-download mr-1.5"></i> Charger session
+                                    </button>
+                                </div>
                             </div>
                             <ul class="text-sm space-y-2">
                     `;
@@ -948,6 +1152,63 @@
 
         window.closeHistory = function() {
             document.getElementById('history-modal').classList.add('hidden');
+        }
+
+        // --- NOUVELLE FONCTION : CHARGER UNE SESSION DEPUIS L'HISTORIQUE ---
+        window.loadHistoricalSession = function(index) {
+            if (window.tasksData.length > 0) {
+                if (!confirm("⚠️ Attention : Une session est déjà en cours. Charger cet historique va écraser vos tâches actuelles. Voulez-vous continuer ?")) {
+                    return;
+                }
+            }
+
+            const report = window.historyReports[index];
+            window.currentAgent = report.agent;
+            
+            const agentSelect = document.getElementById('agent-select');
+            let agentExists = [...agentSelect.options].some(o => o.value === report.agent);
+            
+            if (!agentExists) {
+                agentSelect.innerHTML += `<option value="${report.agent}">${report.agent}</option>`;
+            }
+            agentSelect.value = report.agent;
+
+            window.tasksData = [];
+            window.selectedTasksSet.clear();
+
+            report.tasks.forEach(t => {
+                window.tasksData.push({
+                    id: Date.now() + Math.random(),
+                    name: t.name,
+                    status: t.status,
+                    start: t.start,
+                    end: t.end,
+                    comment: t.comment || '',
+                    relai: t.relai || ''
+                });
+                window.selectedTasksSet.add(t.name);
+            });
+
+            document.getElementById('selected-count').innerText = window.selectedTasksSet.size;
+            document.getElementById('report-card').classList.remove('opacity-40', 'pointer-events-none');
+            document.getElementById('start-btn-text').innerText = "Session Chargée";
+            
+            document.getElementById('session-indicator').innerHTML = `
+                <div class="w-2 h-2 bg-blue-500 rounded-full animate-pulse shadow-[0_0_8px_rgba(59,130,246,0.6)]"></div>
+                <span class="text-[10px] font-bold uppercase tracking-widest text-blue-700">Historique: ${window.currentAgent}</span>
+            `;
+
+            window.closeHistory();
+            window.renderTasks();
+            window.updateTasksUI(); // Met à jour les cases à cocher si la catégorie est ouverte
+            
+            window.saveCurrentSession(); // Sauvegarde l'état d'historique f localstorage
+            alert(`✅ La session de ${window.currentAgent} a été chargée avec succès !`);
+        }
+
+        // Lancement de la restauration au chargement si l'utilisateur est connecté
+        if (sessionStorage.getItem('auth_token') === 'true') {
+            window.restoreCurrentSession();
         }
     </script>
 </body>
