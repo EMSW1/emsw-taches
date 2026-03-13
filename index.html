@@ -99,7 +99,7 @@
                             <div>
                                 <label class="block text-xs font-semibold text-zinc-500 uppercase tracking-wider mb-2">Nom</label>
                                 <div class="relative">
-                                    <select id="agent-select" class="w-full bg-zinc-50 border border-zinc-200 rounded-xl pl-4 pr-10 py-3 text-sm font-medium text-zinc-700 focus:ring-2 focus:ring-zinc-900 focus:border-transparent outline-none transition-all appearance-none cursor-pointer">
+                                    <select id="agent-select" onchange="window.checkPassations(this.value)" class="w-full bg-zinc-50 border border-zinc-200 rounded-xl pl-4 pr-10 py-3 text-sm font-medium text-zinc-700 focus:ring-2 focus:ring-zinc-900 focus:border-transparent outline-none transition-all appearance-none cursor-pointer">
                                         <option value="" disabled selected>Sélectionner un nom...</option>
                                     </select>
                                     <div class="absolute inset-y-0 right-0 pr-4 flex items-center pointer-events-none">
@@ -327,7 +327,6 @@
         }
 
         window.initUI = function() {
-            // Rendu Agents
             const agentSelect = document.getElementById('agent-select');
             const currentAgentVal = agentSelect.value;
             agentSelect.innerHTML = '<option value="" disabled selected>Sélectionner un nom...</option>';
@@ -336,7 +335,6 @@
             });
             if(window.allAgents.includes(currentAgentVal)) agentSelect.value = currentAgentVal;
 
-            // Rendu Catégories
             const catContainer = document.getElementById('categories-container');
             catContainer.innerHTML = '';
             Object.keys(window.tasksConfig).forEach(cat => {
@@ -348,7 +346,6 @@
                 `;
             });
             
-            // Reset state
             document.getElementById('entities-container').classList.add('hidden');
             document.getElementById('dynamic-tasks-list').innerHTML = `
                 <div class="flex flex-col items-center justify-center py-8 text-zinc-400 bg-zinc-50 rounded-xl border border-dashed border-zinc-200">
@@ -430,7 +427,7 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
-        import { getDatabase, ref, push, set, query, orderByChild, startAt, get } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
+        import { getDatabase, ref, push, set, query, orderByChild, startAt, get, remove } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyCSk9I4yAy0cP5j_zIcAcM2STY0Jntaxi8",
@@ -453,7 +450,7 @@
         window.tasksData = [];
         window.selectedTasksSet = new Set();
         window.historyReports = []; 
-        window.currentTelegramMessageId = null; // ID du message en cours
+        window.currentTelegramMessageId = null; 
 
         window.getTime = function() {
             return new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
@@ -468,7 +465,6 @@
                       .replace(/'/g, "&#039;");
         };
 
-        // --- NOUVELLES FONCTIONS TELEGRAM ---
         async function sendNewTelegramMessage(text) {
             const url = `https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage`;
             try {
@@ -513,7 +509,7 @@
             
             let text = `👨‍💻 Agent : <b>${window.currentAgent}</b>\n`;
             text += `📅 Date : ${new Date().toLocaleDateString('fr-FR')}\n\n`;
-            text += `📋 <b>Les tâches :</b>\n`;
+            text += `📋 <b>Suivi des tâches :</b>\n`;
             
             window.tasksData.forEach(t => {
                 let status = "⏳ En attente";
@@ -532,10 +528,17 @@
             if (window.currentTelegramMessageId) {
                 const res = await editTelegramMessage(window.currentTelegramMessageId, text);
                 if (res && !res.ok) {
-                    const newRes = await sendNewTelegramMessage(text);
-                    if (newRes && newRes.ok) {
-                        window.currentTelegramMessageId = newRes.result.message_id;
-                        window.saveCurrentSession();
+                    // VERIFICATION: si le texte est identique, on ne recrée pas de message
+                    if (res.description && res.description.includes("message is not modified")) {
+                        console.log("Mise à jour ignorée: Le message Telegram est identique.");
+                        return; 
+                    } else {
+                        // Sinon, c'est une vraie erreur (ex: message supprimé), on renvoie un nouveau
+                        const newRes = await sendNewTelegramMessage(text);
+                        if (newRes && newRes.ok) {
+                            window.currentTelegramMessageId = newRes.result.message_id;
+                            window.saveCurrentSession();
+                        }
                     }
                 }
             } else {
@@ -547,14 +550,107 @@
             }
         }
 
-        // --- GESTION DE LA PERSISTANCE (SAUVEGARDE DE SESSION PAR PC) ---
+        window.handlePassation = async function(taskId, targetAgent) {
+            const task = window.tasksData.find(x => x.id == taskId);
+            if (!task) return;
+
+            const oldRelai = task.relai;
+            task.relai = targetAgent;
+            window.syncDOMToData(); 
+            task.relai = targetAgent; 
+
+            if (targetAgent && oldRelai !== targetAgent) {
+                try {
+                    const passationRef = push(ref(db, `pending_passations/${targetAgent}`));
+                    await set(passationRef, {
+                        name: task.name,
+                        from: window.currentAgent,
+                        timestamp: new Date().toISOString()
+                    });
+
+                    let text = `🚨 <b>NOUVELLE PASSATION</b> 🚨\n\n`;
+                    text += `👨‍💻 Destinataire : <b>${targetAgent}</b>\n`;
+                    text += `📋 Tâche : <b>${window.escapeHTML(task.name)}</b>\n`;
+                    text += `🔄 Transférée par : <b>${window.currentAgent}</b>`;
+                    await sendNewTelegramMessage(text);
+                    
+                    alert(`Tâche transférée à ${targetAgent} avec succès !`);
+                } catch (e) {
+                    console.error("Erreur passation:", e);
+                }
+            }
+
+            window.saveCurrentSession();
+            window.updateTelegramStatus(); 
+            window.renderTasks();
+        }
+
+        window.checkPassations = async function(agentName, silent = false) {
+            if(!agentName) return;
+            try {
+                const passationsRef = ref(db, `pending_passations/${agentName}`);
+                const snapshot = await get(passationsRef);
+
+                if (snapshot.exists()) {
+                    let hasNewTasks = false;
+                    snapshot.forEach(childSnap => {
+                        const data = childSnap.val();
+                        if (!window.tasksData.find(t => t.name === data.name)) {
+                            window.tasksData.push({
+                                id: Date.now() + Math.random(),
+                                name: data.name,
+                                status: 'started',
+                                start: window.getTime(),
+                                end: null,
+                                comment: `Repris de ${data.from}`,
+                                relai: ''
+                            });
+                            hasNewTasks = true;
+                        }
+                    });
+
+                    if (hasNewTasks) {
+                        if(!silent) alert(`Vous avez de nouvelles tâches transférées par passation !`);
+                        window.currentAgent = agentName;
+                        await remove(passationsRef);
+
+                        const agentSelect = document.getElementById('agent-select');
+                        if (agentSelect) {
+                            agentSelect.value = agentName;
+                            agentSelect.disabled = true;
+                            agentSelect.classList.add('opacity-60', 'cursor-not-allowed');
+                        }
+
+                        document.getElementById('report-card').classList.remove('opacity-40', 'pointer-events-none');
+                        document.getElementById('session-indicator').innerHTML = `
+                            <div class="w-2 h-2 bg-emerald-500 rounded-full animate-pulse shadow-[0_0_8px_rgba(16,185,129,0.6)]"></div>
+                            <span class="text-[10px] font-bold uppercase tracking-widest text-emerald-700">En Ligne: ${window.currentAgent}</span>
+                        `;
+                        document.getElementById('start-btn-text').innerText = "Ajouter d'autres Tâches";
+
+                        window.saveCurrentSession();
+                        window.updateTelegramStatus(); 
+                        window.renderTasks();
+                    } else {
+                        await remove(passationsRef);
+                    }
+                }
+            } catch (e) { console.error("Erreur check passations:", e); }
+        }
+
+        setInterval(() => {
+            if (window.currentAgent) {
+                window.checkPassations(window.currentAgent, true);
+            }
+        }, 15000); 
+
         window.saveCurrentSession = function() {
             if (!window.currentAgent && window.tasksData.length === 0) return;
             const sessionData = {
                 agent: window.currentAgent,
                 tasksData: window.tasksData,
                 selectedTasks: Array.from(window.selectedTasksSet),
-                telegramMsgId: window.currentTelegramMessageId // Save l'id de message pour l'editer f refresh
+                telegramMsgId: window.currentTelegramMessageId 
             };
             localStorage.setItem('active_session', JSON.stringify(sessionData));
         };
@@ -575,7 +671,6 @@
                         window.selectedTasksSet = new Set(data.selectedTasks || []);
                         window.currentTelegramMessageId = data.telegramMsgId || null;
 
-                        // Restaurer l'interface
                         const agentSelect = document.getElementById('agent-select');
                         if (agentSelect) {
                             let agentExists = [...agentSelect.options].some(o => o.value === data.agent);
@@ -583,8 +678,6 @@
                                 agentSelect.innerHTML += `<option value="${data.agent}">${data.agent}</option>`;
                             }
                             agentSelect.value = data.agent;
-                            
-                            // VERROUILLER LE SELECT AGENT
                             agentSelect.disabled = true;
                             agentSelect.classList.add('opacity-60', 'cursor-not-allowed');
                         }
@@ -600,7 +693,7 @@
                         document.getElementById('selected-count').innerText = window.selectedTasksSet.size;
 
                         window.renderTasks();
-                        console.log("Session précédente restaurée avec succès !");
+                        window.checkPassations(data.agent, true);
                     }
                 } catch (e) {
                     console.error("Erreur de restauration de session", e);
@@ -611,11 +704,9 @@
         window.syncAndSave = function() {
             window.syncDOMToData();
             window.saveCurrentSession();
-            window.updateTelegramStatus(); // Mettre à jour en direct le bot mli yzid commentaire wla passation
+            window.updateTelegramStatus(); 
         };
-        // --- FIN DE LA PERSISTANCE ---
 
-        // --- ADMIN FUNCTIONS ---
         window.showAdminPanel = function() { document.getElementById('admin-modal').classList.remove('hidden'); }
         window.closeAdminPanel = function() { document.getElementById('admin-modal').classList.add('hidden'); }
         
@@ -859,20 +950,25 @@
             window.saveCurrentSession();
         }
 
-        window.initSession = function() {
+        window.initSession = async function() {
             const agentSelect = document.getElementById('agent-select');
             window.currentAgent = agentSelect.value;
-            
             const selectedTasks = Array.from(window.selectedTasksSet);
 
             if (!window.currentAgent) return alert("Veuillez choisir un agent.");
-            if (selectedTasks.length === 0) return alert("Veuillez cocher au moins une tâche.");
+            
+            // CONDITION AJOUTEE : Ne rien faire si aucune tâche n'est sélectionnée
+            if (selectedTasks.length === 0) {
+                if (window.tasksData.length === 0) {
+                    return alert("Veuillez cocher au moins une tâche pour démarrer.");
+                } else {
+                    return alert("Veuillez cocher au moins une tâche à ajouter au tableau.");
+                }
+            }
 
             window.syncDOMToData();
 
             let addedTasks = [];
-            let isFirstTime = window.tasksData.length === 0;
-
             selectedTasks.forEach(t => {
                 if (!window.tasksData.find(existing => existing.name === t)) {
                     window.tasksData.push({
@@ -889,11 +985,9 @@
             });
 
             if (addedTasks.length === 0) {
-                alert("Ces tâches ont déjà été ajoutées au tableau de bord.");
-                return;
+                return alert("Ces tâches ont déjà été ajoutées au tableau de bord.");
             }
 
-            // VERROUILLER LE SELECT AGENT
             agentSelect.disabled = true;
             agentSelect.classList.add('opacity-60', 'cursor-not-allowed');
 
@@ -904,7 +998,7 @@
                 <span class="text-[10px] font-bold uppercase tracking-widest text-emerald-700">En Ligne: ${window.currentAgent}</span>
             `;
 
-            window.updateTelegramStatus(); // Creation ou Mis à jour du Message en Live Telegram
+            await window.updateTelegramStatus(); 
 
             window.selectedTasksSet.clear();
             document.getElementById('selected-count').innerText = "0";
@@ -914,9 +1008,10 @@
 
             window.renderTasks();
             window.saveCurrentSession(); 
+            
+            await window.checkPassations(window.currentAgent, true);
         }
 
-        // NOUVELLE FONCTION QUITTER LA SESSION
         window.quitSession = function() {
             if(confirm("Êtes-vous sûr de vouloir quitter ? Toutes les tâches en cours seront effacées.")) {
                 window.clearCurrentSession();
@@ -924,13 +1019,11 @@
                 window.selectedTasksSet.clear();
                 window.currentAgent = "";
                 
-                // Réactiver l'input agent
                 const agentSelect = document.getElementById('agent-select');
                 agentSelect.disabled = false;
                 agentSelect.value = "";
                 agentSelect.classList.remove('opacity-60', 'cursor-not-allowed');
                 
-                // Reset UI
                 document.getElementById('report-card').classList.add('opacity-40', 'pointer-events-none');
                 document.getElementById('start-btn-text').innerText = "Démarrer les Taches";
                 document.getElementById('selected-count').innerText = "0";
@@ -1037,7 +1130,7 @@
                                 <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                                     <i class="fa-solid fa-arrow-right-arrow-left text-zinc-400 text-xs"></i>
                                 </div>
-                                <select id="relai-${t.id}" onchange="window.syncAndSave()" class="w-full text-sm bg-zinc-50 border border-zinc-200 rounded-xl pl-9 pr-3 py-2.5 outline-none focus:border-zinc-400 focus:bg-white transition-all appearance-none cursor-pointer">
+                                <select id="relai-${t.id}" onchange="window.handlePassation('${t.id}', this.value)" class="w-full text-sm bg-zinc-50 border border-zinc-200 rounded-xl pl-9 pr-3 py-2.5 outline-none focus:border-zinc-400 focus:bg-white transition-all appearance-none cursor-pointer">
                                     ${relaiOptions}
                                 </select>
                                 <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
@@ -1068,7 +1161,7 @@
                 }
             }
             
-            window.updateTelegramStatus(); // Edite l'message en live sur le Bot Telegram
+            window.updateTelegramStatus(); 
             
             window.renderTasks();
             window.saveCurrentSession(); 
@@ -1082,7 +1175,7 @@
             
             sendNewTelegramMessage(`⚠️ <b>ALERTE</b> de <b>${window.currentAgent}</b> sur [<b>${window.escapeHTML(task.name)}</b>]:\n💬 ${window.escapeHTML(msgInput)}`);
             
-            window.updateTelegramStatus(); // On update le global au cas où le commentaire a changé
+            window.updateTelegramStatus(); 
             window.renderTasks();
             window.saveCurrentSession();
         }
@@ -1279,13 +1372,12 @@
             }
             agentSelect.value = report.agent;
 
-            // VERROUILLER LE SELECT AGENT
             agentSelect.disabled = true;
             agentSelect.classList.add('opacity-60', 'cursor-not-allowed');
 
             window.tasksData = [];
             window.selectedTasksSet.clear();
-            window.currentTelegramMessageId = null; // Reset l'ID dyal telegram bach ydir message jdid mn l'historique
+            window.currentTelegramMessageId = null; 
 
             report.tasks.forEach(t => {
                 window.tasksData.push({
@@ -1314,7 +1406,7 @@
             window.updateTasksUI(); 
             
             window.saveCurrentSession(); 
-            window.updateTelegramStatus(); // Creation dyal message jdid sur Telegram pour l'historique chargé
+            window.updateTelegramStatus(); 
             
             alert(`✅ La session de ${window.currentAgent} a été chargée avec succès !`);
         }
